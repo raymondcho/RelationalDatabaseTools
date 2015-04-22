@@ -57,13 +57,15 @@ public class Calculate3NFDecomposition {
 		// Place any remaining attributes that have not been placed in any relations in the previous step in a single relation schema.
 		if (originalAttributes.size() > addedAttributes.size()) {
 			outputMsg += " There is at least one attribute from original relation that has not been placed in any new relation, " 
-					+ "so creating additional relation schema with those attribute(s).";
+					+ "so creating additional relation schema with those attribute(s):";
 			List<Attribute> missingAttributes = new ArrayList<>();
 			for (Attribute missingAttr : originalAttributes) {
 				if (!CalculateClosure.containsAttribute(addedAttributes, missingAttr)) {
+					outputMsg += " " + missingAttr.getName();
 					missingAttributes.add(missingAttr);
 				}
 			}
+			outputMsg += ". ";
 			List<FunctionalDependency> emptyFD = new ArrayList<>();
 			Relation extra3NFRelation = new Relation(originalRelation.getName() + counter++, missingAttributes, emptyFD);
 			workingOutputRelations.add(extra3NFRelation);
