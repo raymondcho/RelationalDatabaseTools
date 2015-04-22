@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <link type="text/css" rel="stylesheet" href="RelationalDatabaseTools.css">
+    <title>Relational Database Tools</title>
+    <script type="text/javascript" language="javascript" src="relationaldatabasetools/relationaldatabasetools.nocache.js"></script>
+  </head>
+  <body>
+	<h1>Relational Database Tools</h1>
+	<h2>Attribute closure calculator, Candidate key calculator, Minimum (Canonical) cover calculator, Functional dependency calculator and Normal form calculator</h2>
+	<div>
+		<b>Currently supported functionality: (Updated 4/12/2015)</b>
+		<ul>
+			<li>Correctly parses user input for relation schema and functional dependencies.</li>
+			<li>Calculates the closure of each element in the power set of given attributes.</li>
+			<li>Calculates minimum-set (candidate) keys and superkeys.</li>
+			<li>Calculates a minimum (canonical) cover of functional dependencies on the given set of functional dependencies.</li>
+			<li>Derives all single-attribute right-hand side functional dependencies.</li>
+			<li>Checks if given relation schema is in First, Second, Third and Boyce-Codd normal forms.</li>
+		</ul>
+		<b>To-do in the future:</b>
+		<ul>
+			<li>Allow for BCNF and 3NF decomposition.</li>
+			<li>Add support for multivalued dependencies.</li>
+			<li>Check if given relation schema is in Fourth Normal form.</li>
+		</ul>
+		<div>
+			<a href="https://github.com/raymondcho/RelationalDatabaseTools" target="_blank">Link to source code on GitHub</a>
+		</div>
+		<div>
+			<a href="http://sayat.me/RCDatabaseTools" target="_blank">Report a bug</a>
+		</div>
+	</div>
+	<div id="relationalTools"></div>
+    <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
+    <noscript>
+      <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
+        Your web browser must have JavaScript enabled
+        in order for this application to display correctly.
+      </div>
+    </noscript>
+    <script>
+  		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+ 		 m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  		ga('create', 'UA-61686279-1', 'auto');
+  		ga('send', 'pageview');
+	</script>
+  </body>
+  <footer>
+      <p>&nbsp;</p>
+      <a href=../legal_notices>Terms of use and privacy policy</a>
+  </footer>
+</html>
