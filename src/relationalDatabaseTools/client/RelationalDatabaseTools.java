@@ -330,7 +330,9 @@ public class RelationalDatabaseTools implements EntryPoint {
 		// Display normal forms
 		appendOutput("Determining highest normal form of relation: ", true);
 		DetermineNormalForms normalForms = new DetermineNormalForms(relation);
-		normalForms.calculateNormalForms();
+		if (recalculate) {
+			normalForms.calculateNormalForms();
+		}
 		appendOutput(normalForms.getFirstNormalFormMsg(), true);
 		appendOutput(normalForms.getSecondNormalFormMsg(), true);
 		appendOutput(normalForms.getThirdNormalFormMsg(), true);
@@ -343,7 +345,9 @@ public class RelationalDatabaseTools implements EntryPoint {
 			appendOutput("Input relation is already in 3NF. No decomposition necessary. ", true);
 		} else {
 			Calculate3NFDecomposition threeNF = new Calculate3NFDecomposition(relation);
-			threeNF.decomposeTo3NF();
+			if (recalculate) {
+				threeNF.decomposeTo3NF();
+			}
 			appendOutput(threeNF.getOutputMsg(), true);
 			List<Relation> output3NFRelations = threeNF.get3NFRelations();
 			for (Relation r : output3NFRelations) {

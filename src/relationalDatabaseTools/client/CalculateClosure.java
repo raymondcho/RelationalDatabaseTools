@@ -87,7 +87,7 @@ public class CalculateClosure {
 	}
 	
 	protected static boolean isProperSubsetAttributeOf(final List<Attribute> largerAttribute, final List<Attribute> smallerAttribute) {
-		if (largerAttribute.size() <= smallerAttribute.size()) {
+		if (largerAttribute.size() < smallerAttribute.size()) {
 			return false;
 		}
 		for (Attribute a : smallerAttribute) {

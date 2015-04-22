@@ -96,8 +96,8 @@ public class Calculate3NFDecomposition {
 			}
 		}
 		// Finally, if any relation includes only a subset of attributes found in another relation, delete the smaller relation.
-		outputMsg += " Testing if any relation includes only a subset of attributes found in another relation "
-				+ "(and deleting the smaller one). ";
+		outputMsg += " Testing if any relation includes all of the attributes found in another relation "
+				+ "(and deleting the duplicate or smaller one). ";
 		boolean[] removeIndices = new boolean[workingOutputRelations.size()];
 		boolean removedone = false;
 		for (int i = 0; i < removeIndices.length; i++) {
@@ -118,7 +118,7 @@ public class Calculate3NFDecomposition {
 			}
 		}
 		if (removedone) {
-			outputMsg += " Removed at least one new relation that was a proper subset of another new relation.";
+			outputMsg += " Removed at least one new relation that was a duplicate or subset of another new relation.";
 		} else {
 			outputMsg += " No new relations were removed.";
 		}

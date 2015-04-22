@@ -9,14 +9,16 @@ public class MinimalFDCover {
 		List<FunctionalDependency> fMin = new ArrayList<>();
 		// Split FDs that have more than one attribute on right-side.
 		for (FunctionalDependency f : relation.getInputFDs()) {
-			if (f.getRightHandAttributes().size() == 1) {
-				fMin.add(f);
-			} else {
-				for (Attribute a : f.getRightHandAttributes()) {
-					List<Attribute> rightSplitted = new ArrayList<>();
-					rightSplitted.add(a);
-					FunctionalDependency splitted = new FunctionalDependency(f.getLeftHandAttributes(), rightSplitted, relation);
-					fMin.add(splitted);
+			if (f.isProperFD) {
+				if (f.getRightHandAttributes().size() == 1) {
+					fMin.add(f);
+				} else {
+					for (Attribute a : f.getRightHandAttributes()) {
+						List<Attribute> rightSplitted = new ArrayList<>();
+						rightSplitted.add(a);
+						FunctionalDependency splitted = new FunctionalDependency(f.getLeftHandAttributes(), rightSplitted, relation);
+						fMin.add(splitted);
+					}
 				}
 			}
 		}
@@ -70,7 +72,11 @@ public class MinimalFDCover {
 			}
 		}
 		fMin.clear();
-		fMin.addAll(minimizedLHS);
+		for (FunctionalDependency funcDe : minimizedLHS) {
+			if (funcDe.isProperFD) {
+				fMin.add(funcDe);
+			}
+		}
 		// Now minimize the set of functional dependencies
 		int[] blocked = new int[fMin.size()];
 		for (int y = 0; y < blocked.length; y++) {
