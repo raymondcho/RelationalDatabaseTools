@@ -336,6 +336,20 @@ public class RelationalDatabaseTools implements EntryPoint {
 		appendOutput(normalForms.getThirdNormalFormMsg(), true);
 		appendOutput(normalForms.getBCNFMsg(), true);
 
+		appendOutput("---------------", true);
+		// Output 3NF decomposition
+		appendOutput("Decomposing input relation into 3NF (lossless and preserving all functional dependencies): ", true);
+		if (normalForms.isIn3NF()) {
+			appendOutput("Input relation is already in 3NF. No decomposition necessary. ", true);
+		} else {
+			Calculate3NFDecomposition threeNF = new Calculate3NFDecomposition(relation);
+			threeNF.decomposeTo3NF();
+			appendOutput(threeNF.getOutputMsg(), true);
+			List<Relation> output3NFRelations = threeNF.get3NFRelations();
+			for (Relation r : output3NFRelations) {
+				appendOutput(r.printRelation(), true);
+			}
+		}
 	}
 	
 	private void displayOutput(final String output) {

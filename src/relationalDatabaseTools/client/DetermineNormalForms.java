@@ -300,4 +300,8 @@ public class DetermineNormalForms {
 	protected String getBCNFMsg() {
 		return BCNFMsg;
 	}
+	
+	protected boolean isIn3NF() {
+		return isThirdNormalForm;
+	}
 }

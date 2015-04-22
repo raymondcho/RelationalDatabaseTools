@@ -30,44 +30,34 @@ public class Calculate3NFDecomposition {
 			outputMsg = "No functional dependencies in minimal cover, therefore input relation is already in 3NF.";
 			return;
 		}
-		outputMsg = "Decomposing input relation into 3NF relations using the Synthesis algorithm.";
+		outputMsg = "Decomposing input relation into 3NF relations using the Synthesis algorithm. ";
+		List<Relation> workingOutputRelations = new ArrayList<>();
 		// Obtain list of all attributes in original relation
 		List<Attribute> originalAttributes = originalRelation.getAttributes();
 		List<Attribute> addedAttributes = new ArrayList<>();
 		// Obtain minimal (canonical) cover of the set of original relation's functional dependencies.
-		// For each functional dependency, create a relation schema with the closure of the left-hand side.
+		// For each functional dependency, create a relation schema with the attributes in that functional dependency (both sides).
+		outputMsg += "For each functional dependency of the canonical cover set of original relation's functional dependencies, "
+				+ "create a relation schema with the attributes in that functional dependency (both sides). ";
 		int counter = 0;
 		for (FunctionalDependency fd : originalRelation.getMinimalCover()) {
-			// Find the closure of this FD.
-			Closure closure = null;
-			for (Closure c : originalRelation.getClosures()) {
-				if (c.getClosureOf().size() == fd.getLeftHandAttributes().size()) {
-					boolean containsAll = true;
-					for (Attribute a : fd.getLeftHandAttributes()) {
-						if (!CalculateClosure.containsAttribute(c.getClosureOf(), a)) {
-							containsAll = false;
-							break;
-						}
-					}
-					if (containsAll) {
-						closure = c;
-						break;
-					}
-				}
-			}
+			List<Attribute> decomposedAttrs = new ArrayList<>();
+			decomposedAttrs.addAll(fd.getLeftHandAttributes());
+			decomposedAttrs.addAll(fd.getRightHandAttributes());
 			List<FunctionalDependency> decomposedFD = new ArrayList<>();
 			decomposedFD.add(fd);
-			Relation threeNFRelation = new Relation(originalRelation.getName() + counter++, closure.getClosure(), decomposedFD);
-			CalculateClosure.improvedCalculateClosures(threeNFRelation);
-			for (Attribute a : closure.getClosure()) {
+			Relation threeNFRelation = new Relation(originalRelation.getName() + counter++, decomposedAttrs, decomposedFD);
+			for (Attribute a : decomposedAttrs) {
 				if (!CalculateClosure.containsAttribute(addedAttributes, a)) {
 					addedAttributes.add(a);
 				}
 			}
-			threeNFRelations.add(threeNFRelation);
+			workingOutputRelations.add(threeNFRelation);
 		}
 		// Place any remaining attributes that have not been placed in any relations in the previous step in a single relation schema.
 		if (originalAttributes.size() > addedAttributes.size()) {
+			outputMsg += " There is at least one attribute from original relation that has not been placed in any new relation, " 
+					+ "so creating additional relation schema with those attribute(s).";
 			List<Attribute> missingAttributes = new ArrayList<>();
 			for (Attribute missingAttr : originalAttributes) {
 				if (!CalculateClosure.containsAttribute(addedAttributes, missingAttr)) {
@@ -76,36 +66,70 @@ public class Calculate3NFDecomposition {
 			}
 			List<FunctionalDependency> emptyFD = new ArrayList<>();
 			Relation extra3NFRelation = new Relation(originalRelation.getName() + counter++, missingAttributes, emptyFD);
-			CalculateClosure.improvedCalculateClosures(extra3NFRelation);
-			threeNFRelations.add(extra3NFRelation);
+			workingOutputRelations.add(extra3NFRelation);
 		}
 		// Check if a key of the original relation is found in at least one newly formed 3NF relation.
-		boolean originalKeyFound = false;
 		for (Closure minimumKey : originalRelation.getMinimumKeyClosures()) {
-			boolean containsAllAttributes = true;
-			for (Relation r : threeNFRelations) {
+			boolean containsAllAttributes = false;
+			for (Relation r : workingOutputRelations) {
+				boolean relationHasAllAttrs = true;
 				for (Attribute minimumKeyAttr : minimumKey.getClosureOf()) {
 					if (!CalculateClosure.containsAttribute(r.getAttributes(), minimumKeyAttr)) {
-						containsAllAttributes = false;
+						relationHasAllAttrs = false;
 						break;
 					}
 				}
-				if (containsAllAttributes) {
-					originalKeyFound = true;
+				if (relationHasAllAttrs) {
+					containsAllAttributes = true;
 					break;
 				}
 			}
-			if (originalKeyFound) {
-				break;
+			if (!containsAllAttributes) {
+				// Create an additional relation schema with the missing key.
+				outputMsg += " Key {" + minimumKey.printLeftSideAttributes() + "} was not found in any of the newly formed 3NF relations, "
+						+ " therefore creating an additional relation schema with that key. ";
+				List<FunctionalDependency> emptyFD = new ArrayList<>();
+				Relation keyRelation = new Relation(originalRelation.getName() + counter++, minimumKey.getClosureOf(), emptyFD);
+				workingOutputRelations.add(keyRelation);
 			}
 		}
-		if (!originalKeyFound) {
-			// Create an additional relation schema with a key.
-			List<Attribute> keyAttrs = originalRelation.getMinimumKeyClosures().get(0).getClosureOf();
-			List<FunctionalDependency> emptyFD = new ArrayList<>();
-			Relation keyRelation = new Relation(originalRelation.getName() + counter++, keyAttrs, emptyFD);
-			CalculateClosure.improvedCalculateClosures(keyRelation);
-			threeNFRelations.add(keyRelation);
+		// Finally, if any relation includes only a subset of attributes found in another relation, delete the smaller relation.
+		outputMsg += " Testing if any relation includes only a subset of attributes found in another relation "
+				+ "(and deleting the smaller one). ";
+		boolean[] removeIndices = new boolean[workingOutputRelations.size()];
+		boolean removedone = false;
+		for (int i = 0; i < removeIndices.length; i++) {
+			removeIndices[i] = false;
 		}
+		for (int i = 0; i < workingOutputRelations.size(); i++) {
+			if (!removeIndices[i]) {
+				Relation currentRelation = workingOutputRelations.get(i);
+				for (int j = 0; j < workingOutputRelations.size(); j++) {
+					if (i != j && !removeIndices[j]) {
+						Relation otherRelation = workingOutputRelations.get(j);
+						if (CalculateClosure.isProperSubsetAttributeOf(currentRelation.getAttributes(), otherRelation.getAttributes())) {
+							removeIndices[j] = true;
+							removedone = true;
+						}
+					}
+				}
+			}
+		}
+		if (removedone) {
+			outputMsg += " Removed at least one new relation that was a proper subset of another new relation.";
+		} else {
+			outputMsg += " No new relations were removed.";
+		}
+		for (int i = 0; i < workingOutputRelations.size(); i++) {
+			if (!removeIndices[i]) {
+				threeNFRelations.add(workingOutputRelations.get(i));
+			}
+		}
+		outputMsg += " Finished decomposing input relation into 3NF relations.";
+		outputMsgFlag = true;
+	}
+	
+	protected List<Relation> get3NFRelations() {
+		return threeNFRelations;
 	}
 }

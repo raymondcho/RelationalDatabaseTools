@@ -149,6 +149,20 @@ public class Relation {
 		Collections.sort(derivedFDs);
 	}
 	
+	protected String printRelation() {
+		String output = name;
+		StringBuilder sb = new StringBuilder();
+		sb.append("(");
+		for (int i = 0; i < attributes.size(); i++) {
+			sb.append(attributes.get(i).getName());
+			if (i < attributes.size() - 1) {
+				sb.append(", ");
+			}
+		}
+		sb.append(")");
+		return output + sb.toString();
+	}
+	
 	protected void addDerivedFunctionalDependency(final FunctionalDependency f) {
 		boolean duplicateCheck = true;
 		for (FunctionalDependency fd : workingFDs) {
@@ -363,4 +377,5 @@ public class Relation {
 		}
 		return false;
 	}
+	
 }

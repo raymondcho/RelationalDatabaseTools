@@ -18,6 +18,17 @@ public class Closure implements Comparable<Closure>{
 	public List<Attribute> getClosure() {
 		return closure;
 	}
+	
+	public String printLeftSideAttributes() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < closureOf.size(); i++) {
+			sb.append(closureOf.get(i).getName());
+			if (i < closureOf.size() - 1) {
+				sb.append(", ");
+			}
+		}
+		return sb.toString();
+	}
 
 	@Override
 	public int compareTo(Closure otherClosure) {
