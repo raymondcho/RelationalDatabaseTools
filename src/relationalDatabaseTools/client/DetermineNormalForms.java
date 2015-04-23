@@ -3,6 +3,12 @@ package relationalDatabaseTools.client;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Checks input relation for compliance with normal forms.
+ * 
+ * @author Raymond Cho
+ * 
+ */
 public class DetermineNormalForms {
 	private final Relation relation;
 	private boolean isFirstNormalForm;
@@ -46,23 +52,23 @@ public class DetermineNormalForms {
 		}
 		if (singleAttribute) {
 			isSecondNormalForm = true;
-			secondNormalFormMsg = "Input relation is in 2NF: " 
+			secondNormalFormMsg = "Input relation is in 2NF: "
 					+ "It is in 1NF and there are no composite minimum keys (minimum keys composed of more than one attribute).";
 			return;
 		}
 		// Check if there is at least one non-prime attribute that does not
 		// depend on all minimum key attributes
-		
+
 		List<Attribute> failedAttrs = new ArrayList<>();
 		List<Closure> failedClosures = new ArrayList<>();
 		List<Closure> failedProperClosure = new ArrayList<>();
-		
+
 		List<Attribute> primeAttributes = relation.getPrimeAttributes();
 		for (Closure minClosure : relation.getMinimumKeyClosures()) {
 			if (minClosure.getClosureOf().size() > 1) {
 				List<Attribute> nonPrimes = new ArrayList<>();
 				for (Attribute ab : minClosure.getClosure()) {
-					if (!CalculateClosure.containsAttribute(primeAttributes, ab)) {
+					if (!RDTUtils.attributeListContainsAttribute(primeAttributes, ab)) {
 						nonPrimes.add(ab);
 					}
 				}
@@ -71,9 +77,10 @@ public class DetermineNormalForms {
 						if (c.getClosureOf().size() >= minClosure.getClosureOf().size()) {
 							break;
 						}
-						if (CalculateClosure.isProperSubsetClosureOf(minClosure, c)) {
-							if (CalculateClosure.containsAttribute(c.getClosure(), ac) && !CalculateClosure.containsAttribute(c.getClosureOf(), ac)) {
-								if (!CalculateClosure.containsAttribute(failedAttrs, ac)) {
+						if (RDTUtils.isClosureProperSubsetOfOtherClosure(minClosure, c)) {
+							if (RDTUtils.attributeListContainsAttribute(c.getClosure(), ac)
+									&& !RDTUtils.attributeListContainsAttribute(c.getClosureOf(), ac)) {
+								if (!RDTUtils.attributeListContainsAttribute(failedAttrs, ac)) {
 									failedAttrs.add(ac);
 									failedClosures.add(c);
 									failedProperClosure.add(minClosure);
@@ -85,7 +92,7 @@ public class DetermineNormalForms {
 				}
 			}
 		}
-		
+
 		if (failedAttrs.isEmpty()) {
 			isSecondNormalForm = true;
 			secondNormalFormMsg = "Input relation is in 2NF: "
@@ -95,7 +102,7 @@ public class DetermineNormalForms {
 			isSecondNormalForm = false;
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < failedAttrs.size(); i++) {
-				sb.append("The minimum set of attributes that attribute " + failedAttrs.get(i).getName() 
+				sb.append("The minimum set of attributes that attribute " + failedAttrs.get(i).getName()
 						+ " is functionally determined by is attribute(s) {");
 				for (int j = 0; j < failedClosures.get(i).getClosureOf().size(); j++) {
 					sb.append(failedClosures.get(i).getClosureOf().get(j).getName());
@@ -121,26 +128,32 @@ public class DetermineNormalForms {
 						+ "To satisfy 2NF, there should not be any non-prime attribute "
 						+ " that can be functionally determined by a proper subset of a composite minimum key. "
 						+ "See above closure list for the composite minimum key(s). "
-						+ "The following non-prime " + attribute + " the condition: " + sb.toString();
+						+ "The following non-prime "
+						+ attribute + " the condition: " + sb.toString();
 			}
 		}
 	}
 
-	/*
-	 * Determines if for a given FD A-> B, B is a subset of A.
+	/**
+	 * 
+	 * @param functionalDependency
+	 * @return True if input functional dependency is trivial: all of its
+	 *         right-hand side attributes are also in its left-hand side.
 	 */
-	private boolean isFDTrivial(final FunctionalDependency f) {
+	private boolean isTrivialFD(final FunctionalDependency f) {
 		for (Attribute rightAttr : f.getRightHandAttributes()) {
-			if (!CalculateClosure.containsAttribute(
-					f.getLeftHandAttributes(), rightAttr)) {
+			if (!RDTUtils.attributeListContainsAttribute(f.getLeftHandAttributes(), rightAttr)) {
 				return false;
 			}
 		}
 		return true;
 	}
-	
-	/*
-	 * Determines if for a given FD A->B of relation R, A is a superkey or key of R.
+
+	/**
+	 * 
+	 * @param functionalDependency
+	 * @return True if input functional dependency A->B of relation R, A is a
+	 *         superkey or key of R.
 	 */
 	private boolean isAKeyOrSuperKey(final FunctionalDependency f) {
 		List<Closure> allKeys = new ArrayList<>();
@@ -150,8 +163,7 @@ public class DetermineNormalForms {
 			if (c.getClosureOf().size() == f.getLeftHandAttributes().size()) {
 				boolean isFullMatch = true;
 				for (Attribute a : f.getLeftHandAttributes()) {
-					if (!CalculateClosure.containsAttribute(
-							c.getClosureOf(), a)) {
+					if (!RDTUtils.attributeListContainsAttribute(c.getClosureOf(), a)) {
 						isFullMatch = false;
 						break;
 					}
@@ -163,7 +175,7 @@ public class DetermineNormalForms {
 		}
 		return false;
 	}
-	
+
 	private void calculateThirdNormalForm() {
 		if (!isSecondNormalForm) {
 			isThirdNormalForm = false;
@@ -174,7 +186,7 @@ public class DetermineNormalForms {
 		// For each FD A ->B
 		for (FunctionalDependency f : relation.getFDs()) {
 			// Check if B is a subset of A (A->B is trivial)
-			if (isFDTrivial(f)) {
+			if (isTrivialFD(f)) {
 				continue;
 			}
 
@@ -187,7 +199,7 @@ public class DetermineNormalForms {
 			boolean isPartofKey = false;
 			for (Closure c : relation.getMinimumKeyClosures()) {
 				for (Attribute a : f.getRightHandAttributes()) {
-					if (CalculateClosure.containsAttribute(c.getClosureOf(), a)) {
+					if (RDTUtils.attributeListContainsAttribute(c.getClosureOf(), a)) {
 						isPartofKey = true;
 						break;
 					}
@@ -245,17 +257,18 @@ public class DetermineNormalForms {
 		// For each FD A ->B
 		for (FunctionalDependency f : relation.getFDs()) {
 			// Check if B is a subset of A (A->B is trivial)
-			if (isFDTrivial(f)) {
+			if (isTrivialFD(f)) {
 				continue;
 			}
 			// Check if A is a superkey of B
 			if (isAKeyOrSuperKey(f)) {
 				continue;
 			}
-			// Having not satisfied at least one of the previous conditions, the FD violates BCNF
+			// Having not satisfied at least one of the previous conditions, the
+			// FD violates BCNF
 			failedFDs.add(f);
 		}
-		
+
 		if (failedFDs.isEmpty()) {
 			isBCNF = true;
 			BCNFMsg = "Input relation is in BCNF: it is in 3NF and for each functional dependency: "
@@ -280,11 +293,11 @@ public class DetermineNormalForms {
 			BCNFMsg = "Input relation is not in BCNF: it is in 3NF but "
 					+ "not all functional dependencies satisfy at least one of the following conditions: "
 					+ "(1) The right-hand side is a subset of the left hand side, or "
-					+ "(2) the left-hand side is a superkey (or minimum key) of the relation. "
-					+ "The functional " + failure + sb.toString();
+					+ "(2) the left-hand side is a superkey (or minimum key) of the relation. " + "The functional "
+					+ failure + sb.toString();
 		}
 	}
-	
+
 	protected String getFirstNormalFormMsg() {
 		return firstNormalFormMsg;
 	}
@@ -292,16 +305,20 @@ public class DetermineNormalForms {
 	protected String getSecondNormalFormMsg() {
 		return secondNormalFormMsg;
 	}
-	
+
 	protected String getThirdNormalFormMsg() {
 		return thirdNormalFormMsg;
 	}
-	
+
 	protected String getBCNFMsg() {
 		return BCNFMsg;
 	}
-	
+
 	protected boolean isIn3NF() {
 		return isThirdNormalForm;
+	}
+	
+	protected boolean isInBCNF() {
+		return isBCNF;
 	}
 }

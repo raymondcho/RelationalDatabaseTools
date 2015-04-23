@@ -2,6 +2,11 @@ package relationalDatabaseTools.client;
 
 import java.util.List;
 
+/**
+ * Contains static methods used to calculate a relation's minimum candidate keys and superkeys.
+ * @author Raymond Cho
+ *
+ */
 public class CalculateKeys {
 	
 	public static void calculateKeys(final Relation relation) {
@@ -26,7 +31,7 @@ public class CalculateKeys {
 					for (Closure minimumClosure : relation.getMinimumKeyClosures()) {
 						boolean earlyTerminateLocal = false;
 						for (Attribute minAttr : minimumClosure.getClosureOf()) {
-							if (!CalculateClosure.containsAttribute(left, minAttr)) {
+							if (!RDTUtils.attributeListContainsAttribute(left, minAttr)) {
 								earlyTerminateLocal = true;
 								break;
 							}
@@ -51,7 +56,7 @@ public class CalculateKeys {
 		List<Closure> minimumKeys = relation.getMinimumKeyClosures();
 		List<Attribute> allAttributes = relation.getAttributes();
 		for (Attribute a : allAttributes) {
-			if (!CalculateClosure.containsAttributeInClosureList(minimumKeys, a)) {
+			if (!RDTUtils.closureListContainsAttribute(minimumKeys, a)) {
 				relation.addNonPrimeAttribute(a);
 			}
 		}
@@ -61,7 +66,7 @@ public class CalculateKeys {
 		List<Attribute> allAttributes = relation.getAttributes();
 		List<Attribute> nonPrimeAttributes = relation.getNonPrimeAttributes();
 		for (Attribute a : allAttributes) {
-			if (!CalculateClosure.containsAttribute(nonPrimeAttributes, a)) {
+			if (!RDTUtils.attributeListContainsAttribute(nonPrimeAttributes, a)) {
 				relation.addPrimeAttribute(a);
 			}
 		}

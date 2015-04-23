@@ -14,7 +14,9 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
- * Entry point classes define <code>onModuleLoad()</code>.
+ * Relational Database Tools user interface.
+ * @author Raymond Cho
+ *
  */
 public class RelationalDatabaseTools implements EntryPoint {
 	
@@ -326,9 +328,9 @@ public class RelationalDatabaseTools implements EntryPoint {
 			appendOutput("Input relation is already in 3NF. No decomposition necessary. ", true);
 		} else {
 			Calculate3NFDecomposition threeNF = new Calculate3NFDecomposition(relation);
-			threeNF.decomposeTo3NF();
+			threeNF.decompose();
 			appendOutput(threeNF.getOutputMsg(), true);
-			List<Relation> output3NFRelations = threeNF.get3NFRelations();
+			List<Relation> output3NFRelations = threeNF.getOutputRelations();
 			for (Relation r : output3NFRelations) {
 				appendOutput(r.printRelation(), true);
 			}

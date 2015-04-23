@@ -4,6 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Static methods to calculate a minimum (canonical) cover of functional
+ * dependencies.
+ * 
+ * @author Raymond Cho
+ * 
+ */
 public class MinimalFDCover {
 	public static void determineMinimalCover(final Relation relation) {
 		List<FunctionalDependency> fMin = new ArrayList<>();
@@ -16,7 +23,8 @@ public class MinimalFDCover {
 					for (Attribute a : f.getRightHandAttributes()) {
 						List<Attribute> rightSplitted = new ArrayList<>();
 						rightSplitted.add(a);
-						FunctionalDependency splitted = new FunctionalDependency(f.getLeftHandAttributes(), rightSplitted, relation);
+						FunctionalDependency splitted = new FunctionalDependency(f.getLeftHandAttributes(),
+								rightSplitted, relation);
 						fMin.add(splitted);
 					}
 				}
@@ -29,7 +37,8 @@ public class MinimalFDCover {
 			if (f.getLeftHandAttributes().size() > 1) {
 				List<Attribute> minimizedLeftAttributes = new ArrayList<>();
 				for (Attribute a : f.getLeftHandAttributes()) {
-					// Check if attribute is necessary by taking it out and computing closure.
+					// Check if attribute is necessary by taking it out and
+					// computing closure.
 					Attribute rightAttribute = f.getRightHandAttributes().get(0);
 					List<Attribute> newLeftSide = new ArrayList<>();
 					for (Attribute b : f.getLeftHandAttributes()) {
@@ -43,7 +52,7 @@ public class MinimalFDCover {
 						if (c.getClosureOf().size() == newLeftSide.size()) {
 							boolean containsAll = true;
 							for (Attribute attr : newLeftSide) {
-								if (!CalculateClosure.containsAttribute(c.getClosureOf(), attr)) {
+								if (!RDTUtils.attributeListContainsAttribute(c.getClosureOf(), attr)) {
 									containsAll = false;
 									break;
 								}
@@ -54,16 +63,18 @@ public class MinimalFDCover {
 							}
 						}
 					}
-					
-					// Now check if the right-hand attribute is still in the closure.
-					if (!CalculateClosure.containsAttribute(closure.getClosure(), rightAttribute)) {
+
+					// Now check if the right-hand attribute is still in the
+					// closure.
+					if (!RDTUtils.attributeListContainsAttribute(closure.getClosure(), rightAttribute)) {
 						// Removed attribute is necessary. Add to list.
 						minimizedLeftAttributes.add(a);
 					}
 				}
 				if (minimizedLeftAttributes.size() < f.getLeftHandAttributes().size()) {
 					if (!minimizedLeftAttributes.isEmpty()) {
-						FunctionalDependency reducedFD = new FunctionalDependency(minimizedLeftAttributes, f.getRightHandAttributes(), relation);
+						FunctionalDependency reducedFD = new FunctionalDependency(minimizedLeftAttributes,
+								f.getRightHandAttributes(), relation);
 						minimizedLHS.add(reducedFD);
 					}
 				} else {
@@ -96,9 +107,12 @@ public class MinimalFDCover {
 					checkRemoved.add(fMin.get(j));
 				}
 			}
-			Closure checkClosure = CalculateClosure.calculateClosureOf(fMin.get(i).getLeftHandAttributes(), checkRemoved);
-			if (!CalculateClosure.containsAttribute(checkClosure.getClosure(), fMin.get(i).getRightHandAttributes().get(0))) {
-				// The FD is necessary since the new closure does not contain the right-hand side attribute of the removed FD.
+			Closure checkClosure = CalculateClosure.calculateClosureOf(fMin.get(i).getLeftHandAttributes(),
+					checkRemoved);
+			if (!RDTUtils.attributeListContainsAttribute(checkClosure.getClosure(), fMin.get(i)
+					.getRightHandAttributes().get(0))) {
+				// The FD is necessary since the new closure does not contain
+				// the right-hand side attribute of the removed FD.
 				minimizedSetFDs.add(fMin.get(i));
 			} else {
 				// The FD is not necessary and we can strike it out of the list.
@@ -127,13 +141,13 @@ public class MinimalFDCover {
 			for (Attribute rightAttr : f.getRightHandAttributes()) {
 				rightHandSide.add(rightAttr);
 			}
-			for (int j= 0; j < fMin.size(); j++) {
+			for (int j = 0; j < fMin.size(); j++) {
 				if (j != i && checkedIndices[j] == 0) {
 					FunctionalDependency g = fMin.get(j);
 					if (g.getLeftHandAttributes().size() == leftHandSide.size()) {
 						boolean containsAll = true;
 						for (Attribute leftAttr : leftHandSide) {
-							if (!CalculateClosure.containsAttribute(g.getLeftHandAttributes(), leftAttr)) {
+							if (!RDTUtils.attributeListContainsAttribute(g.getLeftHandAttributes(), leftAttr)) {
 								containsAll = false;
 								break;
 							}

@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Represents a functional dependency.
+ * @author Raymond Cho
+ *
+ */
 public class FunctionalDependency implements Comparable<FunctionalDependency> {
 	private final Relation relation;
 	private final List<Attribute> leftSide;

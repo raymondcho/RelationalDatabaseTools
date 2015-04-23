@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Represents a relation.
+ * @author Raymond Cho
+ *
+ */
 public class Relation {
 
 	private static String EMPTY = "";
@@ -163,8 +168,11 @@ public class Relation {
 		for (int i = 0; i < fds.size(); i++) {
 			sb.append(fds.get(i).getFDName());
 			if (i < fds.size() - 1) {
-				sb.append(", ");
+				sb.append("; ");
 			}
+		}
+		if (fds.isEmpty()) {
+			sb.append("(none)");
 		}
 		sb.append(".");
 		return sb.toString();

@@ -2,6 +2,11 @@ package relationalDatabaseTools.client;
 
 import java.util.List;
 
+/**
+ * Represents a closure.
+ * @author Raymond Cho
+ *
+ */
 public class Closure implements Comparable<Closure>{
 	private final List<Attribute> closureOf;		// Left side of closure
 	private final List<Attribute> closure;			// Right side of closure

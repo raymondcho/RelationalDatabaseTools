@@ -1,31 +1,36 @@
 package relationalDatabaseTools.client;
 
+/**
+ * Simple binary counter that is used to cycle through the power set of input attribute set.
+ * @author Raymond
+ *
+ */
 public class BinaryCounter {
-	private final char[] counter;
+	private final boolean[] counter;
 	private int decimalCounter;
 	private boolean reachedMax;
 	
 	public BinaryCounter(int capacity) {
-		counter = new char[capacity];
+		counter = new boolean[capacity];
 		for (int i = 0; i < counter.length; i++) {
-			counter[i] = '0';
+			counter[i] = false;
 		}
-		counter[0] = '1';
+		counter[0] = true;
 		decimalCounter = 1;
 		reachedMax = false;
 	}
-	public char[] getCounter() {
+	public boolean[] getCounter() {
 		return counter;
 	}
 	
 	public void incrementCounter() {
 		boolean carryOver = false;
 		for (int i = 0; i < counter.length; i++) {
-			if (counter[i] == '0') {
-				counter[i] = '1';
+			if (!counter[i]) {
+				counter[i] = true;
 				carryOver = false;
 			} else {
-				counter[i] = '0';
+				counter[i] = false;
 				carryOver = true;
 			}
 			if (!carryOver) {

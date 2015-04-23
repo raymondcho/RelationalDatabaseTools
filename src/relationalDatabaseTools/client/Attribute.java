@@ -1,6 +1,10 @@
 package relationalDatabaseTools.client;
 
-
+/**
+ * Attribute class that represents an attribute.
+ * @author Raymond Cho
+ *
+ */
 public class Attribute implements Comparable<Attribute>{
 	private final String name;
 	public Attribute(final String name) {
