@@ -71,6 +71,8 @@ public class Calculate3NFDecomposition {
 			workingOutputRelations.add(extra3NFRelation);
 		}
 		// Check if a key of the original relation is found in at least one newly formed 3NF relation.
+		outputMsg += " Checking if each key can be found in at least one newly formed 3NF relation. ";
+		boolean addedNewKeyRelation = false;
 		for (Closure minimumKey : originalRelation.getMinimumKeyClosures()) {
 			boolean containsAllAttributes = false;
 			for (Relation r : workingOutputRelations) {
@@ -88,12 +90,16 @@ public class Calculate3NFDecomposition {
 			}
 			if (!containsAllAttributes) {
 				// Create an additional relation schema with the missing key.
+				addedNewKeyRelation = true;
 				outputMsg += " Key {" + minimumKey.printLeftSideAttributes() + "} was not found in any of the newly formed 3NF relations, "
 						+ " therefore creating an additional relation schema with that key. ";
 				List<FunctionalDependency> emptyFD = new ArrayList<>();
 				Relation keyRelation = new Relation(originalRelation.getName() + counter++, minimumKey.getClosureOf(), emptyFD);
 				workingOutputRelations.add(keyRelation);
 			}
+		}
+		if (!addedNewKeyRelation) {
+			outputMsg += " Since each key is present in at least one of the new 3NF relations, no new relation was created. ";
 		}
 		// Finally, if any relation includes only a subset of attributes found in another relation, delete the smaller relation.
 		outputMsg += " Testing if any relation includes all of the attributes found in another relation "

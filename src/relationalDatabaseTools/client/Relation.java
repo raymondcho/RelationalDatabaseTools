@@ -150,8 +150,8 @@ public class Relation {
 	}
 	
 	protected String printRelation() {
-		String output = name;
 		StringBuilder sb = new StringBuilder();
+		sb.append(name);
 		sb.append("(");
 		for (int i = 0; i < attributes.size(); i++) {
 			sb.append(attributes.get(i).getName());
@@ -159,8 +159,15 @@ public class Relation {
 				sb.append(", ");
 			}
 		}
-		sb.append(")");
-		return output + sb.toString();
+		sb.append(") having FD(s): ");
+		for (int i = 0; i < fds.size(); i++) {
+			sb.append(fds.get(i).getFDName());
+			if (i < fds.size() - 1) {
+				sb.append(", ");
+			}
+		}
+		sb.append(".");
+		return sb.toString();
 	}
 	
 	protected void addDerivedFunctionalDependency(final FunctionalDependency f) {
