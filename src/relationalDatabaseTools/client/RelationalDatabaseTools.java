@@ -42,8 +42,6 @@ public class RelationalDatabaseTools implements EntryPoint {
 	private final List<Label> outputs = new ArrayList<>();
 	
 	private Relation relation;
-	private String schemaInput;
-	private String fdInput;
 	
 	@Override
 	public void onModuleLoad() {
@@ -92,8 +90,6 @@ public class RelationalDatabaseTools implements EntryPoint {
 		
 		RootPanel.get("relationalTools").add(mainPanel);
 		relation = null;
-		schemaInput = null;
-		fdInput = null;
 	}
 
 	private void calculate() {
@@ -115,11 +111,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 			displayError("Input relation schema must contain only one pair of parenthesis.");
 			return;
 		}
-		boolean recalculate = false;
-		if (relation == null || !schemaInput.equals(completeRelation) || !fdInput.equals(completeFDs)) {
-			relation = new Relation(completeRelation);
-			recalculate = true;
-		}
+		relation = new Relation(completeRelation);
 		if (relation.getAttributes().isEmpty()) {
 			displayError("Input relation schema has no attributes.");
 			return;
@@ -136,15 +128,12 @@ public class RelationalDatabaseTools implements EntryPoint {
 			displayError("Warning: encountered a functional dependency that is "
 					+ "incomplete or improperly formatted or input functional dependencies is empty.");
 		}
-		if (recalculate) {
-			relation.addFunctionalDependencies(completeFDs);
-		}
+		relation.addFunctionalDependencies(completeFDs);
 		if (!relation.hasPassedIntegrityChecks()) {
 			displayError(relation.getIntegrityCheckErrorMsg());
 			return;
 		}
-		schemaInput = completeRelation;
-		fdInput = completeFDs;
+
 		// Print out list of attributes
 		List<Attribute> attributes = relation.getAttributes();
 		String having;
@@ -186,9 +175,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 		
 		appendOutput("---------------", true);
 		// Print out closure of given attributes and keys
-		if (recalculate) {
-			CalculateClosure.improvedCalculateClosures(relation);
-		}
+		CalculateClosure.improvedCalculateClosures(relation);
 		appendOutput("Calculating attribute closures: ", true);
 		List<Closure> calculatedClosures = relation.getClosures();
 		List<Closure> minimumKeys = relation.getMinimumKeyClosures();
@@ -280,9 +267,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 		
 		appendOutput("---------------", true);
 		// Print out minimal cover of functional dependencies
-		if (recalculate) {
-			MinimalFDCover.determineMinimalCover(relation);
-		}
+		MinimalFDCover.determineMinimalCover(relation);
 		appendOutput("Calculating a minimal cover set (F_min) of functional dependencies from given input: (note that functional dependencies with common left-hand sides have their right-hand sides combined)", true);
 		List<FunctionalDependency> minimalCover = relation.getMinimalCover();
 		if (minimalCover.isEmpty()) {
@@ -300,9 +285,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 		
 		appendOutput("---------------", true);
 		// Print out derived functional dependencies
-		if (recalculate) {
-			CalculateFDs.calculateDerivedFDs(relation);
-		}
+		CalculateFDs.calculateDerivedFDs(relation);
 		appendOutput("Calculating non-trivial single-attribute right-hand side "
 				+ "functional dependencies that follow from the given ones: "
 				+ "(note that input functional dependencies with more than one right-hand side attribute "
@@ -330,14 +313,12 @@ public class RelationalDatabaseTools implements EntryPoint {
 		// Display normal forms
 		appendOutput("Determining highest normal form of relation: ", true);
 		DetermineNormalForms normalForms = new DetermineNormalForms(relation);
-		if (recalculate) {
-			normalForms.calculateNormalForms();
-		}
+		normalForms.calculateNormalForms();
 		appendOutput(normalForms.getFirstNormalFormMsg(), true);
 		appendOutput(normalForms.getSecondNormalFormMsg(), true);
 		appendOutput(normalForms.getThirdNormalFormMsg(), true);
 		appendOutput(normalForms.getBCNFMsg(), true);
-
+		
 		appendOutput("---------------", true);
 		// Output 3NF decomposition
 		appendOutput("Decomposing input relation into 3NF (lossless and preserving all functional dependencies): ", true);
@@ -345,15 +326,14 @@ public class RelationalDatabaseTools implements EntryPoint {
 			appendOutput("Input relation is already in 3NF. No decomposition necessary. ", true);
 		} else {
 			Calculate3NFDecomposition threeNF = new Calculate3NFDecomposition(relation);
-			if (recalculate) {
-				threeNF.decomposeTo3NF();
-			}
+			threeNF.decomposeTo3NF();
 			appendOutput(threeNF.getOutputMsg(), true);
 			List<Relation> output3NFRelations = threeNF.get3NFRelations();
 			for (Relation r : output3NFRelations) {
 				appendOutput(r.printRelation(), true);
 			}
 		}
+
 	}
 	
 	private void displayOutput(final String output) {

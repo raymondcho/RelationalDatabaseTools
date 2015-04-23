@@ -62,8 +62,10 @@ public class MinimalFDCover {
 					}
 				}
 				if (minimizedLeftAttributes.size() < f.getLeftHandAttributes().size()) {
-					FunctionalDependency reducedFD = new FunctionalDependency(minimizedLeftAttributes, f.getRightHandAttributes(), relation);
-					minimizedLHS.add(reducedFD);
+					if (!minimizedLeftAttributes.isEmpty()) {
+						FunctionalDependency reducedFD = new FunctionalDependency(minimizedLeftAttributes, f.getRightHandAttributes(), relation);
+						minimizedLHS.add(reducedFD);
+					}
 				} else {
 					minimizedLHS.add(f);
 				}
