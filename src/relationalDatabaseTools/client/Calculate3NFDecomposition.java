@@ -78,6 +78,9 @@ public class Calculate3NFDecomposition extends CalculateDecomposition {
 					break;
 				}
 			}
+			if (foundKey != null) {
+				break;
+			}
 		}
 		if (foundKey != null) {
 			appendOutputMsg(" Since key {" + foundKey.printLeftSideAttributes() + 
