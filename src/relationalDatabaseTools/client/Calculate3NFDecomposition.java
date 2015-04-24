@@ -70,24 +70,25 @@ public class Calculate3NFDecomposition extends CalculateDecomposition {
 		// If none of the new relations is a superkey for the original R, then
 		// add another relation whose schema is a key for R.
 		appendOutputMsg(" Checking if at least one key can be found in at least one newly formed 3NF relation.");
-		boolean foundAKey = false;
+		Closure foundKey = null;
 		for (Closure minimumKey : getInputRelation().getMinimumKeyClosures()) {
 			for (Relation r : workingOutputRelations) {
 				if (RDTUtils.isAttributeListSubsetOfOtherAttributeList(r.getAttributes(), minimumKey.getClosureOf())) {
-					foundAKey = true;
+					foundKey = minimumKey;
 					break;
 				}
 			}
 		}
-		if (foundAKey) {
-			appendOutputMsg(" Since each key is present in at least one of the new 3NF relations, no new relation was created.");
+		if (foundKey != null) {
+			appendOutputMsg(" Since key {" + foundKey.printLeftSideAttributes() + 
+					"} is present in at least one of the new 3NF relations, no new relation was created.");
 		} else {
 			appendOutputMsg(" Since none of the newly created 3NF relations contains a key of the original relation, need to "
 					+ "add another relation whose schema is a key of the original relation.");
 			List<Attribute> addedKeyAttrs = getInputRelation().getMinimumKeyClosures().get(0).getClosureOf();
 			List<FunctionalDependency> emptyFD = RDTUtils.fetchFDsOfDecomposedR(getInputRelation().getMinimalCover(), addedKeyAttrs);
 			Relation keyRelation = new Relation(getInputRelation().getName() + counter++, addedKeyAttrs, emptyFD);
-			appendOutputMsg(" Added key { " + getInputRelation().getMinimumKeyClosures().get(0).printLeftSideAttributes() + "}. ");
+			appendOutputMsg(" Added key {" + getInputRelation().getMinimumKeyClosures().get(0).printLeftSideAttributes() + "}. ");
 			workingOutputRelations.add(keyRelation);
 		}
 		// Finally, if any relation includes only a subset of attributes found
