@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class DetermineNormalForms {
 	private final Relation relation;
+	public boolean hasDeterminedNormalForms;
 	private boolean isFirstNormalForm;
 	private String firstNormalFormMsg;
 	private boolean isSecondNormalForm;
@@ -19,9 +20,12 @@ public class DetermineNormalForms {
 	private String thirdNormalFormMsg;
 	private boolean isBCNF;
 	private String BCNFMsg;
+	private List<FunctionalDependency> bcnfViolatingFDs;
 
 	public DetermineNormalForms(final Relation relation) {
 		this.relation = relation;
+		hasDeterminedNormalForms = false;
+		bcnfViolatingFDs = null;
 	}
 
 	public void calculateNormalForms() {
@@ -29,6 +33,7 @@ public class DetermineNormalForms {
 		calculateSecondNormalForm();
 		calculateThirdNormalForm();
 		calculateBCNF();
+		hasDeterminedNormalForms = true;
 	}
 
 	private void calculateFirstNormalForm() {
@@ -193,7 +198,7 @@ public class DetermineNormalForms {
 			// Next check if A is a super key or key of the relation R
 			if (isAKeyOrSuperKey(f)) {
 				continue;
-			}
+			} 
 
 			// Check if B is or is part of some candidate key of the relation R
 			boolean isPartofKey = false;
@@ -260,7 +265,7 @@ public class DetermineNormalForms {
 			if (isTrivialFD(f)) {
 				continue;
 			}
-			// Check if A is a superkey of B
+			// Check if A is a superkey of input relation
 			if (isAKeyOrSuperKey(f)) {
 				continue;
 			}
@@ -320,5 +325,25 @@ public class DetermineNormalForms {
 	
 	protected boolean isInBCNF() {
 		return isBCNF;
+	}
+	
+	protected List<FunctionalDependency> getBCNFViolatingFDs() {
+		if (bcnfViolatingFDs == null) {
+			bcnfViolatingFDs = new ArrayList<>();
+			for (FunctionalDependency f : relation.getFDs()) {
+				// Check if B is a subset of A (A->B is trivial)
+				if (isTrivialFD(f)) {
+					continue;
+				}
+				// Check if A is a superkey of input relation
+				if (isAKeyOrSuperKey(f)) {
+					continue;
+				}
+				// Having not satisfied at least one of the previous conditions, the
+				// FD violates BCNF
+				bcnfViolatingFDs.add(f);
+			}
+		}
+		return bcnfViolatingFDs;
 	}
 }

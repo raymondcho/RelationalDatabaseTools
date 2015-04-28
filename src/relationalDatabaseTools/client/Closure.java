@@ -34,6 +34,21 @@ public class Closure implements Comparable<Closure>{
 		}
 		return sb.toString();
 	}
+	
+	public String printCompleteClosure() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("{");
+		sb.append(printLeftSideAttributes());
+		sb.append("}+ -> {");
+		for (int i = 0; i < closure.size(); i++) {
+			sb.append(closure.get(i).getName());
+			if (i < closure.size() - 1) {
+				sb.append(", ");
+			}
+		}
+		sb.append("}");
+		return sb.toString();
+	}
 
 	@Override
 	public int compareTo(Closure otherClosure) {

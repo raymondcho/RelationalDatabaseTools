@@ -82,6 +82,33 @@ public class RDTUtils {
 		}
 		return true;
 	}
+	
+	/**
+	 * 
+	 * @param leftHand
+	 * @param closureList
+	 * @return Closure object in input closureList of which the left-hand side attributes match input list of attributes, or null
+	 * if such Closure object does not exist in input closureList.
+	 */
+	protected static Closure findClosureWithLeftHandAttributes(final List<Attribute> leftHand, final List<Closure> closureList) {
+		Closure closure = null;
+		for (Closure c : closureList) {
+			if (c.getClosureOf().size() == leftHand.size()) {
+				boolean containsAll = true;
+				for (Attribute attr : leftHand) {
+					if (!attributeListContainsAttribute(c.getClosureOf(), attr)) {
+						containsAll = false;
+						break;
+					}
+				}
+				if (containsAll) {
+					closure = c;
+					break;
+				}
+			}
+		}
+		return closure;
+	}
 
 	/**
 	 * 

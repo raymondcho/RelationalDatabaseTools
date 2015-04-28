@@ -10,7 +10,7 @@
 	<h1>Relational Database Tools</h1>
 	<h2>Attribute closure calculator, Candidate key calculator, Minimum (Canonical) cover calculator, Functional dependency calculator and Normal form calculator</h2>
 	<div>
-		<b>Currently supported functionality: (Updated 4/22/2015)</b>
+		<b>Currently supported functionality: (Updated 4/28/2015)</b>
 		<ul>
 			<li>Correctly parses user input for relation schema and functional dependencies.</li>
 			<li>Calculates the closure of each element in the power set of given attributes.</li>
@@ -19,10 +19,11 @@
 			<li>Derives all single-attribute right-hand side functional dependencies.</li>
 			<li>Checks if given relation schema is in First, Second, Third and Boyce-Codd normal forms.</li>
 			<li>If given relation schema is not in 3NF, will decompose input relation in a lossless and functional dependency preserving manner. **Beta feature**</li>
+			<li>If given relation schema is not in BCNF, will decompose input relation in a lossless but not necessarily functional dependency preserving manner. **Beta feature**</li>
 		</ul>
 		<b>To-do in the future:</b>
 		<ul>
-			<li>Allow for BCNF decomposition.</li>
+		    <li>Improve output interface.</li>
 			<li>Add support for multivalued dependencies.</li>
 			<li>Check if given relation schema is in Fourth Normal form.</li>
 		</ul>

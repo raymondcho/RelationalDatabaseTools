@@ -23,6 +23,11 @@ public class Calculate3NFDecomposition extends CalculateDecomposition {
 			setOutputMsg("No functional dependencies in minimal cover, therefore input relation is already in 3NF.");
 			return;
 		}
+		if (getInputRelation().getNormalFormsResults().isIn3NF()) {
+			setOutputMsgFlag(true);
+			setOutputMsg("Input relation is already in 3NF. No decomposition necessary. ");
+			return;
+		}
 		setOutputMsg("Decomposing input relation into 3NF relations using the Synthesis algorithm.");
 		List<Relation> workingOutputRelations = new ArrayList<>();
 		// Obtain list of all attributes in original relation

@@ -14,6 +14,14 @@ import java.util.List;
 public class MinimalFDCover {
 	public static void determineMinimalCover(final Relation relation) {
 		List<FunctionalDependency> fMin = new ArrayList<>();
+		if (relation.getInputFDs().isEmpty()) {
+			// Input FDs is empty, so minimal cover is also empty.
+			return;
+		}
+		if (relation.getClosures().isEmpty()) {
+			CalculateClosure.improvedCalculateClosures(relation);
+		}
+		
 		// Split FDs that have more than one attribute on right-side.
 		for (FunctionalDependency f : relation.getInputFDs()) {
 			if (f.isProperFD) {
@@ -37,8 +45,7 @@ public class MinimalFDCover {
 			if (f.getLeftHandAttributes().size() > 1) {
 				List<Attribute> minimizedLeftAttributes = new ArrayList<>();
 				for (Attribute a : f.getLeftHandAttributes()) {
-					// Check if attribute is necessary by taking it out and
-					// computing closure.
+					// Check if attribute is necessary by taking it out and computing closure.
 					Attribute rightAttribute = f.getRightHandAttributes().get(0);
 					List<Attribute> newLeftSide = new ArrayList<>();
 					for (Attribute b : f.getLeftHandAttributes()) {
@@ -46,26 +53,10 @@ public class MinimalFDCover {
 							newLeftSide.add(b);
 						}
 					}
-					Closure closure = null;
 					// Find closure with new left-hand side
-					for (Closure c : relation.getClosures()) {
-						if (c.getClosureOf().size() == newLeftSide.size()) {
-							boolean containsAll = true;
-							for (Attribute attr : newLeftSide) {
-								if (!RDTUtils.attributeListContainsAttribute(c.getClosureOf(), attr)) {
-									containsAll = false;
-									break;
-								}
-							}
-							if (containsAll) {
-								closure = c;
-								break;
-							}
-						}
-					}
+					Closure closure = RDTUtils.findClosureWithLeftHandAttributes(newLeftSide, relation.getClosures());
 
-					// Now check if the right-hand attribute is still in the
-					// closure.
+					// Now check if the right-hand attribute is still in the closure.
 					if (!RDTUtils.attributeListContainsAttribute(closure.getClosure(), rightAttribute)) {
 						// Removed attribute is necessary. Add to list.
 						minimizedLeftAttributes.add(a);
@@ -75,7 +66,11 @@ public class MinimalFDCover {
 					if (!minimizedLeftAttributes.isEmpty()) {
 						FunctionalDependency reducedFD = new FunctionalDependency(minimizedLeftAttributes,
 								f.getRightHandAttributes(), relation);
-						minimizedLHS.add(reducedFD);
+						// Verify that new FD is legitimate (i.e., the closure of left side includes the attribute on right side
+						Closure verifyClosure = RDTUtils.findClosureWithLeftHandAttributes(reducedFD.getLeftHandAttributes(), relation.getClosures());
+						if (RDTUtils.attributeListContainsAttribute(verifyClosure.getClosure(), reducedFD.getRightHandAttributes().get(0))) {
+							minimizedLHS.add(reducedFD);
+						}
 					}
 				} else {
 					minimizedLHS.add(f);
@@ -111,8 +106,7 @@ public class MinimalFDCover {
 					checkRemoved);
 			if (!RDTUtils.attributeListContainsAttribute(checkClosure.getClosure(), fMin.get(i)
 					.getRightHandAttributes().get(0))) {
-				// The FD is necessary since the new closure does not contain
-				// the right-hand side attribute of the removed FD.
+				// The FD is necessary since the new closure does not contain the right-hand side attribute of the removed FD.
 				minimizedSetFDs.add(fMin.get(i));
 			} else {
 				// The FD is not necessary and we can strike it out of the list.

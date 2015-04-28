@@ -26,6 +26,7 @@ public class Relation {
 	private final List<Closure> closures;
 	private final List<Closure> minimumKeys;
 	private final List<Closure> superKeys;
+	private DetermineNormalForms normalFormResults;
 	
 	public Relation(final String input) {
 		this.name = parseName(input);
@@ -41,6 +42,7 @@ public class Relation {
 		this.closures = new ArrayList<>();
 		this.minimumKeys = new ArrayList<>();
 		this.superKeys = new ArrayList<>();
+		this.normalFormResults = new DetermineNormalForms(this);
 	}
 	
 	public Relation(final String name, final List<Attribute> attributes, final List<FunctionalDependency> fds) {
@@ -57,6 +59,7 @@ public class Relation {
 		this.closures = new ArrayList<>();
 		this.minimumKeys = new ArrayList<>();
 		this.superKeys = new ArrayList<>();
+		this.normalFormResults = new DetermineNormalForms(this);
 	}
 	
 	public String getName() {
@@ -285,6 +288,14 @@ public class Relation {
 	
 	protected List<Attribute> getNonPrimeAttributes() {
 		return nonPrimeAttributes;
+	}
+	
+	protected void determineNormalForms() {
+		normalFormResults.calculateNormalForms();
+	}
+	
+	protected DetermineNormalForms getNormalFormsResults() {
+		return normalFormResults;
 	}
 	
 	public static boolean isNullOrEmpty(final String s) {

@@ -314,8 +314,8 @@ public class RelationalDatabaseTools implements EntryPoint {
 		appendOutput("---------------", true);
 		// Display normal forms
 		appendOutput("Determining highest normal form of relation: ", true);
-		DetermineNormalForms normalForms = new DetermineNormalForms(relation);
-		normalForms.calculateNormalForms();
+		relation.determineNormalForms();
+		DetermineNormalForms normalForms = relation.getNormalFormsResults();
 		appendOutput(normalForms.getFirstNormalFormMsg(), true);
 		appendOutput(normalForms.getSecondNormalFormMsg(), true);
 		appendOutput(normalForms.getThirdNormalFormMsg(), true);
@@ -335,7 +335,23 @@ public class RelationalDatabaseTools implements EntryPoint {
 				appendOutput(r.printRelation(), true);
 			}
 		}
-
+		
+		appendOutput("---------------", true);
+		// Output BCNF decomposition
+		appendOutput("Decomposing input relation into BCNF (lossless but not necessarily functional dependency preserving): ", true);
+		if (normalForms.isInBCNF()) {
+			appendOutput("Input relation is already in BCNF. No decomposition necessary. ", true);
+		} else {
+			CalculateBCNFDecomposition bcnf = new CalculateBCNFDecomposition(relation);
+			bcnf.decompose();
+			appendOutput(bcnf.getOutputMsg(), true);
+			List<Relation> outputBCNFRelations = bcnf.getOutputRelations();
+			for (Relation r : outputBCNFRelations) {
+				appendOutput(r.printRelation(), true);
+			}
+		}
+		
+		
 	}
 	
 	private void displayOutput(final String output) {
