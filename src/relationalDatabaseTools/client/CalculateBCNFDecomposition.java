@@ -11,9 +11,11 @@ import java.util.List;
  * 
  */
 public class CalculateBCNFDecomposition extends CalculateDecomposition {
+	private final List<Relation> resultWithPossibleDuplicates;
 
 	public CalculateBCNFDecomposition(Relation inputRelation) {
 		super(inputRelation);
+		resultWithPossibleDuplicates = new ArrayList<>();
 	}
 
 	@Override
@@ -32,36 +34,29 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 			return;
 		}
 		setOutputMsg("Decomposing input relation into BCNF relations. ");
-		List<Relation> workingRelations = decomposeBCNFHelper(getInputRelation());
-		boolean[] strike = new boolean[workingRelations.size()];
-		for (int z = 0; z < strike.length; z++) {
-			strike[z] = false;
+		List<Relation> workingOutputRelations = decomposeBCNFHelper(getInputRelation());
+		resultWithPossibleDuplicates.addAll(workingOutputRelations);
+		boolean[] removeIndices = new boolean[workingOutputRelations.size()];
+		for (int i = 0; i < removeIndices.length; i++) {
+			removeIndices[i] = false;
 		}
-		for (int i = 0; i < workingRelations.size(); i++) {
-			if (!strike[i]) {
-				Relation rA = workingRelations.get(i);
-				for (int j = 0; j < workingRelations.size(); j++) {
-					if (i != j && !strike[j]) {
-						Relation rB = workingRelations.get(j);
-						if (rA.getAttributes().size() == rB.getAttributes().size()) {
-							boolean containsAll = true;
-							for (Attribute a : rA.getAttributes()) {
-								if (!RDTUtils.attributeListContainsAttribute(rB.getAttributes(), a)) {
-									containsAll = false;
-									break;
-								}
-							}
-							if (containsAll) {
-								strike[j] = true;
-							}
+		for (int i = 0; i < workingOutputRelations.size(); i++) {
+			if (!removeIndices[i]) {
+				Relation currentRelation = workingOutputRelations.get(i);
+				for (int j = 0; j < workingOutputRelations.size(); j++) {
+					if (i != j && !removeIndices[j]) {
+						Relation otherRelation = workingOutputRelations.get(j);
+						if (RDTUtils.isAttributeListSubsetOfOtherAttributeList(currentRelation.getAttributes(),
+								otherRelation.getAttributes())) {
+							removeIndices[j] = true;
 						}
 					}
 				}
 			}
 		}
-		for (int i = 0; i < workingRelations.size(); i++) {
-			if (!strike[i]) {
-				addRelationtoOutputList(workingRelations.get(i));
+		for (int i = 0; i < workingOutputRelations.size(); i++) {
+			if (!removeIndices[i]) {
+				addRelationtoOutputList(workingOutputRelations.get(i));
 			}
 		}
 		List<FunctionalDependency> missingFDs = new ArrayList<>();
@@ -142,4 +137,7 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 		return result;
 	}
 
+	protected List<Relation> getResultWithDuplicates() {
+		return resultWithPossibleDuplicates;
+	}
 }

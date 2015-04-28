@@ -345,10 +345,23 @@ public class RelationalDatabaseTools implements EntryPoint {
 			CalculateBCNFDecomposition bcnf = new CalculateBCNFDecomposition(relation);
 			bcnf.decompose();
 			appendOutput(bcnf.getOutputMsg(), true);
+			List<Relation> resultsWithDuplicates = bcnf.getResultWithDuplicates();
 			List<Relation> outputBCNFRelations = bcnf.getOutputRelations();
-			for (Relation r : outputBCNFRelations) {
-				appendOutput(r.printRelation(), true);
+			if (resultsWithDuplicates.size() == outputBCNFRelations.size()) {
+				for (Relation r : outputBCNFRelations) {
+					appendOutput(r.printRelation(), true);
+				}
+			} else {
+				appendOutput("Initial set of decomposed BCNF relations: ", true);
+				for (Relation r : resultsWithDuplicates) {
+					appendOutput(r.printRelation(), true);
+				}
+				appendOutput("Final set of decomposed BCNF relations (removing duplicate and subset relations): ", true);
+				for (Relation r : outputBCNFRelations) {
+					appendOutput(r.printRelation(), true);
+				}
 			}
+			
 		}
 		
 		

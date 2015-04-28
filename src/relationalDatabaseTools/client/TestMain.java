@@ -36,19 +36,24 @@ public class TestMain {
 		for (FunctionalDependency fd : relation.getMinimalCover()) {
 			System.out.println(fd.getFDName());
 		}
-//		System.out.println("-------------");
-//		relation.determineNormalForms();
-//		DetermineNormalForms normalForms = relation.getNormalFormsResults();
-//		System.out.println(normalForms.getSecondNormalFormMsg());
-//		System.out.println(normalForms.getThirdNormalFormMsg());
-//		System.out.println(normalForms.getBCNFMsg());
-//		CalculateBCNFDecomposition bcnf = new CalculateBCNFDecomposition(relation);
-//		bcnf.decompose();
-//		System.out.println(bcnf.getOutputMsg());
-//		List<Relation> outputBCNFRelations = bcnf.getOutputRelations();
-//		for (Relation r : outputBCNFRelations) {
-//			System.out.println(r.printRelation());
-//		}
+		System.out.println("-------------");
+		relation.determineNormalForms();
+		DetermineNormalForms normalForms = relation.getNormalFormsResults();
+		System.out.println(normalForms.getSecondNormalFormMsg());
+		System.out.println(normalForms.getThirdNormalFormMsg());
+		System.out.println(normalForms.getBCNFMsg());
+		CalculateBCNFDecomposition bcnf = new CalculateBCNFDecomposition(relation);
+		bcnf.decompose();
+		System.out.println(bcnf.getOutputMsg());
+		System.out.println("Results with possible duplicates: ");
+		for (Relation r : bcnf.getResultWithDuplicates()) {
+			System.out.println(r.printRelation());
+		}
+		System.out.println("Final results:");
+		List<Relation> outputBCNFRelations = bcnf.getOutputRelations();
+		for (Relation r : outputBCNFRelations) {
+			System.out.println(r.printRelation());
+		}
 	}
 	
 }
