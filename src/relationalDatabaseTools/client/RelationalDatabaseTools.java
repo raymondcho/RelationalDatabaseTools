@@ -324,10 +324,10 @@ public class RelationalDatabaseTools implements EntryPoint {
 		appendOutput("---------------", true);
 		// Output 3NF decomposition
 		appendOutput("Decomposing input relation into 3NF (lossless and preserving all functional dependencies): ", true);
+		Calculate3NFDecomposition threeNF = new Calculate3NFDecomposition(relation);
 		if (normalForms.isIn3NF()) {
 			appendOutput("Input relation is already in 3NF. No decomposition necessary. ", true);
 		} else {
-			Calculate3NFDecomposition threeNF = new Calculate3NFDecomposition(relation);
 			threeNF.decompose();
 			appendOutput(threeNF.getOutputMsg(), true);
 			List<Relation> output3NFRelations = threeNF.getOutputRelations();
@@ -342,7 +342,10 @@ public class RelationalDatabaseTools implements EntryPoint {
 		if (normalForms.isInBCNF()) {
 			appendOutput("Input relation is already in BCNF. No decomposition necessary. ", true);
 		} else {
-			CalculateBCNFDecomposition bcnf = new CalculateBCNFDecomposition(relation);
+			if (normalForms.isIn3NF()) {
+				threeNF.decompose();
+			}
+			CalculateBCNFDecomposition bcnf = new CalculateBCNFDecomposition(threeNF);
 			bcnf.decompose();
 			appendOutput(bcnf.getOutputMsg(), true);
 			List<Relation> resultsWithDuplicates = bcnf.getResultWithDuplicates();
