@@ -217,11 +217,6 @@ public class DetermineNormalForms {
 	}
 
 	private void calculateThirdNormalForm() {
-		if (!isSecondNormalForm) {
-			isThirdNormalForm = false;
-			thirdNormalFormMsg = "Input relation is not in 3NF because it is not in 2NF.";
-			return;
-		}
 		List<FunctionalDependency> failedFDs = new ArrayList<>();
 		// For each FD A ->B
 		for (FunctionalDependency f : relation.getFDs()) {
@@ -256,7 +251,7 @@ public class DetermineNormalForms {
 			failedFDs.add(f);
 		}
 		// Check if all FDs fit at least one of the conditions
-		if (failedFDs.isEmpty()) {
+		if (failedFDs.isEmpty() && isSecondNormalForm) {
 			isThirdNormalForm = true;
 			thirdNormalFormMsg = "Input relation is in 3NF: It is in 2NF and for each functional dependency: "
 					+ "(1) The right-hand side is a subset of the left hand side, "
@@ -278,7 +273,13 @@ public class DetermineNormalForms {
 			} else {
 				failure = "dependencies that failed are: ";
 			}
-			thirdNormalFormMsg = "Input relation is not in 3NF: it is in 2NF but "
+			String twoNFStatus;
+			if (isSecondNormalForm) {
+				twoNFStatus = "it is in 2NF but ";
+			} else {
+				twoNFStatus = "it is not in 2NF and ";
+			}
+			thirdNormalFormMsg = "Input relation is not in 3NF: " + twoNFStatus 
 					+ "not all functional dependencies satisfy at least one of the following conditions: "
 					+ "(1) The right-hand side is a subset of the left hand side, "
 					+ "(2) the left-hand side is a superkey (or minimum key) of the relation, or "
@@ -288,11 +289,6 @@ public class DetermineNormalForms {
 	}
 
 	private void calculateBCNF() {
-		if (!isThirdNormalForm) {
-			isBCNF = false;
-			BCNFMsg = "Input relation is not in BCNF because it is not in 3NF.";
-			return;
-		}
 		List<FunctionalDependency> failedFDs = new ArrayList<>();
 		// For each FD A ->B
 		for (FunctionalDependency f : relation.getFDs()) {
@@ -309,7 +305,7 @@ public class DetermineNormalForms {
 			failedFDs.add(f);
 		}
 
-		if (failedFDs.isEmpty()) {
+		if (failedFDs.isEmpty() && isThirdNormalForm) {
 			isBCNF = true;
 			BCNFMsg = "Input relation is in BCNF: it is in 3NF and for each functional dependency: "
 					+ "(1) The right-hand side is a subset of the left hand side, or "
@@ -330,7 +326,13 @@ public class DetermineNormalForms {
 			} else {
 				failure = "dependencies that failed are: ";
 			}
-			BCNFMsg = "Input relation is not in BCNF: it is in 3NF but "
+			String threeNFStatus;
+			if (isThirdNormalForm) {
+				threeNFStatus = "it is in 3NF but ";
+			} else {
+				threeNFStatus = "it is not in 3NF and ";
+			}
+			BCNFMsg = "Input relation is not in BCNF: " + threeNFStatus
 					+ "not all functional dependencies satisfy at least one of the following conditions: "
 					+ "(1) The right-hand side is a subset of the left hand side, or "
 					+ "(2) the left-hand side is a superkey (or minimum key) of the relation. " + "The functional "
@@ -339,11 +341,6 @@ public class DetermineNormalForms {
 	}
 
 	private void calculateFourthNormalForm() {
-		if (!isBCNF) {
-			isFourthNormalForm = false;
-			fourthNormalFormMsg = "Input relation is not in 4NF because it is not in BCNF.";
-			return;
-		}
 		fourthNormalFormMsg = "";
 		List<MultivaluedDependency> failedMVDs = new ArrayList<>();
 		// Promote all FDs into MVDs
@@ -400,7 +397,13 @@ public class DetermineNormalForms {
 			} else {
 				failure = "dependencies that failed are: ";
 			}
-			fourthNormalFormMsg += "Input relation is not in 4NF: it is in BCNF but "
+			String bcnfStatus;
+			if (isBCNF) {
+				bcnfStatus = "it is in BCNF but ";
+			} else {
+				bcnfStatus = "it is not in BCNF and ";
+			}
+			fourthNormalFormMsg += "Input relation is not in 4NF: " + bcnfStatus
 					+ "not all nontrivial multivalued dependencies satisfied the 4NF condition that "
 					+ "the left-hand side is a superkey (or minimum key) of the relation. "
 					+ "A multivalued dependency is trivial if either (1) the right-hand side is a subset of the left-hand side, or "
