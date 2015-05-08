@@ -24,12 +24,8 @@ public class CalculateFDs {
 				}
 			}
 			if (!rightSide.isEmpty()) {
-				for (Attribute b : rightSide) {
-					List<Attribute> rightDerived = new ArrayList<>();
-					rightDerived.add(b);
-					FunctionalDependency derived = new FunctionalDependency(c.getClosureOf(), rightDerived, relation);
-					relation.addDerivedFunctionalDependency(derived);
-				}
+				FunctionalDependency derived = new FunctionalDependency(c.getClosureOf(), rightSide, relation);
+				relation.addDerivedFunctionalDependency(derived);
 			}
 		}
 		relation.sortFDs();

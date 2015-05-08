@@ -11,8 +11,9 @@ import java.util.List;
  */
 public class RDTUtils {
 	
-	public static final String functionalDependencyArrow = "-->";
-	public static final String multivaliedDependencyArrow = "-->->";
+	public static final String functionalDependencyArrow = "\u2192";
+	public static final String multivaliedDependencyArrow = "\u21A0";
+	public static final String LONG_LEFTWARDS_ARROW = "<---";
 
 	/**
 	 * @param attributeList

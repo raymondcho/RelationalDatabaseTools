@@ -7,6 +7,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -25,6 +26,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 	private final HorizontalPanel panel_2 = new HorizontalPanel();
 	private final HorizontalPanel panel_3 = new HorizontalPanel();
 	private final HorizontalPanel panel_4 = new HorizontalPanel();
+	private final VerticalPanel outputPanel = new VerticalPanel();
 	
 	private final Label label_1 = new Label("Enter the relation schema in form R(A,B,C,AB,ABC)");
 	private final Label label_1b = new Label("Use commas to separate attributes. Spaces are optional. Inputs are case-insensitive.");
@@ -90,17 +92,20 @@ public class RelationalDatabaseTools implements EntryPoint {
 		});
 		panel_4.addStyleName("panels");
 		
+		errorLabel.addStyleName("errorLabel");
+		outputPanel.add(errorLabel);
+		outputPanel.add(outputLabel);
+		outputPanel.addStyleName("panels");
+		
 		mainPanel.add(resetButton);
 		mainPanel.add(panel_1);
 		mainPanel.add(panel_2);
 		mainPanel.add(panel_3);
 		mainPanel.add(panel_4);
-		mainPanel.add(errorLabel);
-		mainPanel.add(outputLabel);
-		outputs.add(outputLabel);
-		
-		errorLabel.addStyleName("errorLabel");
+		mainPanel.add(outputPanel);
 		mainPanel.addStyleName("panels");
+		
+		outputs.add(outputLabel);
 		
 		RootPanel.get("relationalTools").add(mainPanel);
 		relation = null;
@@ -227,8 +232,8 @@ public class RelationalDatabaseTools implements EntryPoint {
 		}
 		
 		
-		appendOutput("---------------", true);
 		// Print out closure of given attributes and keys
+		appendMajorBreak();
 		CalculateClosure.improvedCalculateClosures(relation);
 		appendOutput("Calculating attribute closures: ", true);
 		List<Closure> calculatedClosures = relation.getClosures();
@@ -254,18 +259,19 @@ public class RelationalDatabaseTools implements EntryPoint {
 			appendOutput("}", false);
 			if (minimumKeys.contains(closure)) {
 				if (closure.getClosureOf().size() == 1) {
-					appendOutput(" <--- Minimum candidate key", false);
+					appendOutput(" " + RDTUtils.LONG_LEFTWARDS_ARROW + " Minimum candidate key", false);
 				} else {
-					appendOutput(" <--- Composite minimum candidate key", false);
+					appendOutput(" " + RDTUtils.LONG_LEFTWARDS_ARROW + " Composite minimum candidate key", false);
 				}
 			}
 			if (superKeys.contains(closure)) {
-				appendOutput(" <--- Superkey", false);
+				appendOutput(" " + RDTUtils.LONG_LEFTWARDS_ARROW + " Superkey", false);
 			}
 		}
 		
-		appendOutput("---------------", true);
+
 		// Print out number of minimum candidate keys and superkeys
+		appendMajorBreak();
 		int minKeys = relation.getMinimumKeyClosures().size();
 		int minCompKeys = 0;
 		for (Closure c : relation.getMinimumKeyClosures()) {
@@ -294,8 +300,9 @@ public class RelationalDatabaseTools implements EntryPoint {
 			appendOutput("Found " + relation.getSuperKeyClosures().size() + " superkeys (excluding minimum candidate keys).", true);
 		}
 		
-		appendOutput("---------------", true);
+
 		// Print out prime and non-prime attributes
+		appendMajorBreak();
 		appendOutput("List of prime attributes (attributes that are part of a minimum candidate key): ", true);
 		List<Attribute> primes = relation.getPrimeAttributes();
 		for (int i = 0; i < primes.size(); i++) {
@@ -319,8 +326,9 @@ public class RelationalDatabaseTools implements EntryPoint {
 			appendOutput(".", false);
 		}
 		
-		appendOutput("---------------", true);
+
 		// Print out minimal cover of functional dependencies
+		appendMajorBreak();
 		MinimalFDCover.determineMinimalCover(relation);
 		appendOutput("Calculating a minimal cover set (F_min) of functional dependencies from given input: (note that functional dependencies with common left-hand sides have their right-hand sides combined)", true);
 		List<FunctionalDependency> minimalCover = relation.getMinimalCover();
@@ -337,13 +345,11 @@ public class RelationalDatabaseTools implements EntryPoint {
 			appendOutput(" }", false);
 		}
 		
-		appendOutput("---------------", true);
+
 		// Print out derived functional dependencies
+		appendMajorBreak();
 		CalculateFDs.calculateDerivedFDs(relation);
-		appendOutput("Calculating non-trivial single-attribute right-hand side "
-				+ "functional dependencies that follow from the given ones: "
-				+ "(note that input functional dependencies with more than one right-hand side attribute "
-				+ "can be split apart and those split functional dependencies therefore may count but are not included here)", true);
+		appendOutput("Calculating complete set of non-trivial functional dependencies based on the given ones: ", true);
 		List<FunctionalDependency> derivedFDs = relation.getDerivedFDs();
 		if (derivedFDs.isEmpty()) {
 			appendOutput("There are no new functional dependencies aside from the pre-existing ones.", true);
@@ -363,19 +369,25 @@ public class RelationalDatabaseTools implements EntryPoint {
 			}
 		}
 		
-		appendOutput("---------------", true);
+
 		// Display normal forms
+		appendMajorBreak();
 		appendOutput("Determining highest normal form of relation: ", true);
 		relation.determineNormalForms();
 		DetermineNormalForms normalForms = relation.getNormalFormsResults();
 		appendOutput(normalForms.getFirstNormalFormMsg(), true);
+		appendMinorBreak();
 		appendOutput(normalForms.getSecondNormalFormMsg(), true);
+		appendMinorBreak();
 		appendOutput(normalForms.getThirdNormalFormMsg(), true);
+		appendMinorBreak();
 		appendOutput(normalForms.getBCNFMsg(), true);
+		appendMinorBreak();
 		appendOutput(normalForms.getFourthNormalFormMsg(), true);
 		
-		appendOutput("---------------", true);
+		
 		// Output 3NF decomposition
+		appendMajorBreak();
 		appendOutput("Decomposing input relation into 3NF (lossless and preserving all functional dependencies): ", true);
 		Calculate3NFDecomposition threeNF = new Calculate3NFDecomposition(relation);
 		if (normalForms.isIn3NF()) {
@@ -389,8 +401,9 @@ public class RelationalDatabaseTools implements EntryPoint {
 			}
 		}
 		
-		appendOutput("---------------", true);
+		
 		// Output BCNF decomposition
+		appendMajorBreak();
 		appendOutput("Decomposing input relation into BCNF (lossless but not necessarily functional dependency preserving): ", true);
 		if (normalForms.isInBCNF()) {
 			appendOutput("Input relation is already in BCNF. No decomposition necessary. ", true);
@@ -432,7 +445,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 		if (newLine) {
 			Label nextLabel = new Label(output);
 			outputs.add(nextLabel);
-			mainPanel.add(nextLabel);
+			outputPanel.add(nextLabel);
 			return;
 		} else {
 			Label lastLabel = outputs.get(outputs.size()-1);
@@ -441,12 +454,27 @@ public class RelationalDatabaseTools implements EntryPoint {
 		}
 	}
 	
+	private void appendOutput(final Label label) {
+		outputs.add(label);
+		outputPanel.add(label);
+		return;
+	}
+	
+	private void appendMajorBreak() {
+		appendOutput(new HTML("<br>"));
+		appendOutput("------------------------------", true);
+	}
+	
+	private void appendMinorBreak() {
+		appendOutput(new HTML("<br>"));
+	}
+	
 	private void clearOutput() {
 		for (Label label : outputs) {
 			label.setText("");
 		}
 		for (int i = outputs.size()-1; i >= 1; i--) {
-			mainPanel.remove(outputs.get(i));
+			outputPanel.remove(outputs.get(i));
 			outputs.remove(i);
 		}
 	}
