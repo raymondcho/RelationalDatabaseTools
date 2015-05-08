@@ -20,6 +20,8 @@ public class DetermineNormalForms {
 	private String thirdNormalFormMsg;
 	private boolean isBCNF;
 	private String BCNFMsg;
+	private boolean isFourthNormalForm;
+	private String fourthNormalFormMsg;
 	private List<FunctionalDependency> bcnfViolatingFDs;
 
 	public DetermineNormalForms(final Relation relation) {
@@ -33,6 +35,7 @@ public class DetermineNormalForms {
 		calculateSecondNormalForm();
 		calculateThirdNormalForm();
 		calculateBCNF();
+		calculateFourthNormalForm();
 		hasDeterminedNormalForms = true;
 	}
 
@@ -156,18 +159,25 @@ public class DetermineNormalForms {
 
 	/**
 	 * 
-	 * @param functionalDependency
-	 * @return True if input functional dependency A->B of relation R, A is a
+	 * @param dependency
+	 * @return True if input dependency A->B of relation R, A is a
 	 *         superkey or key of R.
 	 */
-	private boolean isAKeyOrSuperKey(final FunctionalDependency f) {
+	@SuppressWarnings("rawtypes")
+	private boolean isAKeyOrSuperKey(final Dependency dependency) {
 		List<Closure> allKeys = new ArrayList<>();
 		allKeys.addAll(relation.getSuperKeyClosures());
 		allKeys.addAll(relation.getMinimumKeyClosures());
 		for (Closure c : allKeys) {
-			if (c.getClosureOf().size() == f.getLeftHandAttributes().size()) {
+			if (c.getClosureOf().size() == dependency.getLeftHandAttributes().size()) {
 				boolean isFullMatch = true;
-				for (Attribute a : f.getLeftHandAttributes()) {
+				List rawAttrs = dependency.getLeftHandAttributes();
+				List<Attribute> castAttrs = new ArrayList<>();
+				for (Object o : rawAttrs) {
+					Attribute a = (Attribute) o;
+					castAttrs.add(a);
+				}
+				for (Attribute a : castAttrs) {
 					if (!RDTUtils.attributeListContainsAttribute(c.getClosureOf(), a)) {
 						isFullMatch = false;
 						break;
@@ -179,6 +189,31 @@ public class DetermineNormalForms {
 			}
 		}
 		return false;
+	}
+	
+	private boolean isTrivialMultivaluedDependency(final MultivaluedDependency m) {
+		// First check if all attributes are found in the MVD (regardless of side). If so, then the MVD is trivial.
+		List<Attribute> mvdAttrs = new ArrayList<>();
+		for (Attribute a : m.getLeftHandAttributes()) {
+			if (!RDTUtils.attributeListContainsAttribute(mvdAttrs, a)) {
+				mvdAttrs.add(a);
+			}
+		}
+		for (Attribute a : m.getRightHandAttributes()) {
+			if (!RDTUtils.attributeListContainsAttribute(mvdAttrs, a)) {
+				mvdAttrs.add(a);
+			}
+		}
+		if (mvdAttrs.size() == relation.getAttributes().size()) {
+			return true;
+		}
+		// Next check if all attributes on right side are also found in left side
+		for (Attribute rightAttr : m.getRightHandAttributes()) {
+			if (!RDTUtils.attributeListContainsAttribute(m.getLeftHandAttributes(), rightAttr)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private void calculateThirdNormalForm() {
@@ -303,6 +338,79 @@ public class DetermineNormalForms {
 		}
 	}
 
+	private void calculateFourthNormalForm() {
+		if (!isBCNF) {
+			isFourthNormalForm = false;
+			fourthNormalFormMsg = "Input relation is not in 4NF because it is not in BCNF.";
+			return;
+		}
+		fourthNormalFormMsg = "";
+		List<MultivaluedDependency> failedMVDs = new ArrayList<>();
+		// Promote all FDs into MVDs
+		List<MultivaluedDependency> combinedMVDs = relation.getMVDs();
+		for (FunctionalDependency fd : relation.getFDs()) {
+			MultivaluedDependency mvd = new MultivaluedDependency(fd.getLeftHandAttributes(), fd.getRightHandAttributes(), relation);
+			boolean duplicateCheck = true;
+			for (MultivaluedDependency m : combinedMVDs) {
+				if (m.getName().equals(mvd.getName())) {
+					duplicateCheck = false;
+					break;
+				}
+			}
+			if (duplicateCheck) {
+				combinedMVDs.add(mvd);
+			}
+		}
+		// For each MVD A -->-> B
+		for (MultivaluedDependency m : combinedMVDs) {
+			System.out.println(m.getName());
+			// Check if the MVD is trivial
+			if (isTrivialMultivaluedDependency(m)) {
+				System.out.println("Trivial");
+				continue;
+			}
+			// Check if the A is a superkey of relation R
+			if (isAKeyOrSuperKey(m)) {
+				System.out.println("Key");
+				continue;
+			}
+			// Having not satisfied at least one of the previous conditions, the
+			// MVD violates 4NF
+			failedMVDs.add(m);
+		}
+		if (failedMVDs.isEmpty()) {
+			isFourthNormalForm = true;
+			fourthNormalFormMsg += "Input relation is in 4NF: it is in BCNF and for each of its nontrivial multivalued dependencies: "
+				+ "the left-hand side is a superkey (or minimum key) of the relation. "
+				+ "A multivalued dependency is trivial if either (1) the right-hand side is a subset of the left-hand side, or "
+				+ "(2) the multivalued dependency contains all attributes of the input relation.";
+		} else {
+			isFourthNormalForm = false;
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < failedMVDs.size(); i++) {
+				sb.append(failedMVDs.get(i).getName());
+				if (i < failedMVDs.size() - 1) {
+					sb.append("; ");
+				}
+			}
+			sb.append(".");
+			String failure;
+			if (failedMVDs.size() == 1) {
+				failure = "dependency that failed is: ";
+			} else {
+				failure = "dependencies that failed are: ";
+			}
+			fourthNormalFormMsg += "Input relation is not in 4NF: it is in BCNF but "
+					+ "not all nontrivial multivalued dependencies satisfied the 4NF condition that "
+					+ "the left-hand side is a superkey (or minimum key) of the relation. "
+					+ "A multivalued dependency is trivial if either (1) the right-hand side is a subset of the left-hand side, or "
+					+ "(2) the multivalued dependency contains all attributes of the input relation. "
+					+ "The multivalued "
+					+ failure + sb.toString();
+		}
+		
+	}
+	
 	protected String getFirstNormalFormMsg() {
 		return firstNormalFormMsg;
 	}
@@ -318,6 +426,10 @@ public class DetermineNormalForms {
 	protected String getBCNFMsg() {
 		return BCNFMsg;
 	}
+	
+	protected String getFourthNormalFormMsg() {
+		return fourthNormalFormMsg;
+	}
 
 	protected boolean isIn3NF() {
 		return isThirdNormalForm;
@@ -325,6 +437,10 @@ public class DetermineNormalForms {
 	
 	protected boolean isInBCNF() {
 		return isBCNF;
+	}
+	
+	protected boolean isIn4NF() {
+		return isFourthNormalForm;
 	}
 	
 	protected List<FunctionalDependency> getBCNFViolatingFDs() {

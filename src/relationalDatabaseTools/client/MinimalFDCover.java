@@ -24,7 +24,7 @@ public class MinimalFDCover {
 		
 		// Split FDs that have more than one attribute on right-side.
 		for (FunctionalDependency f : relation.getInputFDs()) {
-			if (f.isProperFD) {
+			if (f.getIsProperDependency()) {
 				if (f.getRightHandAttributes().size() == 1) {
 					fMin.add(f);
 				} else {
@@ -81,7 +81,7 @@ public class MinimalFDCover {
 		}
 		fMin.clear();
 		for (FunctionalDependency funcDe : minimizedLHS) {
-			if (funcDe.isProperFD) {
+			if (funcDe.getIsProperDependency()) {
 				fMin.add(funcDe);
 			}
 		}

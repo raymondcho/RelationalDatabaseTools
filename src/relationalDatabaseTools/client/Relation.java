@@ -20,9 +20,9 @@ public class Relation {
 	private boolean passedIntegrityChecks;
 	private String integrityCheckErrorMsg;
 	private final List<FunctionalDependency> fds;
-	private final List<FunctionalDependency> workingFDs;
 	private final List<FunctionalDependency> derivedFDs;
 	private final List<FunctionalDependency> minimalCover;
+	private final List<MultivaluedDependency> mvds;
 	private final List<Closure> closures;
 	private final List<Closure> minimumKeys;
 	private final List<Closure> superKeys;
@@ -36,9 +36,9 @@ public class Relation {
 		this.primeAttributes = new ArrayList<>();
 		this.nonPrimeAttributes = new ArrayList<>();
 		this.fds = new ArrayList<>();
-		this.workingFDs = new ArrayList<>();
 		this.derivedFDs = new ArrayList<>();
 		this.minimalCover = new ArrayList<>();
+		this.mvds = new ArrayList<>();
 		this.closures = new ArrayList<>();
 		this.minimumKeys = new ArrayList<>();
 		this.superKeys = new ArrayList<>();
@@ -46,6 +46,10 @@ public class Relation {
 	}
 	
 	public Relation(final String name, final List<Attribute> attributes, final List<FunctionalDependency> fds) {
+		this(name, attributes, fds, null);
+	}
+	
+	public Relation(final String name, final List<Attribute> attributes, final List<FunctionalDependency> fds, final List<MultivaluedDependency> mvds) {
 		this.name = name;
 		passedIntegrityChecks = true;
 		integrityCheckErrorMsg = "";
@@ -53,9 +57,13 @@ public class Relation {
 		this.primeAttributes = new ArrayList<>();
 		this.nonPrimeAttributes = new ArrayList<>();
 		this.fds = fds;
-		this.workingFDs = new ArrayList<>();
 		this.derivedFDs = new ArrayList<>();
 		this.minimalCover = new ArrayList<>();
+		if (mvds == null) {
+			this.mvds = new ArrayList<>();
+		} else {
+			this.mvds = mvds;
+		}
 		this.closures = new ArrayList<>();
 		this.minimumKeys = new ArrayList<>();
 		this.superKeys = new ArrayList<>();
@@ -121,7 +129,7 @@ public class Relation {
 		}
 		for (String prefunctional : FDs) {
 			FunctionalDependency fd = new FunctionalDependency(prefunctional, this);
-			if (fd.isProperFD) {
+			if (fd.getIsProperDependency()) {
 				boolean duplicateCheck = false;
 				for (FunctionalDependency f : fds) {
 					if (f.getFDName().equals(fd.getFDName())) {
@@ -135,25 +143,41 @@ public class Relation {
 				}
 			}
 		}
-		// Split FDs that have more than one attribute on right-hand side into single right-hand side FDs.
-		for (FunctionalDependency f : fds) {
-			if (f.getRightHandAttributes().size() == 1) {
-				workingFDs.add(f);
-			} else {
-				for (Attribute a : f.getRightHandAttributes()) {
-					List<Attribute> rightSplitted = new ArrayList<>();
-					rightSplitted.add(a);
-					FunctionalDependency splitted = new FunctionalDependency(f.getLeftHandAttributes(), rightSplitted, this);
-					workingFDs.add(splitted);
+		Collections.sort(fds);
+	}
+	
+	public void addMultivaluedDependencies(final String input) {
+		String trimmedInput = input.replaceAll("\\s","");
+		if (trimmedInput.isEmpty()) {
+			return;
+		}
+		String[] MVDs;
+		if (trimmedInput.contains(";")) {
+			MVDs = trimmedInput.split(";");
+		} else {
+			MVDs = new String[1];
+			MVDs[0] = trimmedInput;
+		}
+		for (String premultivalued : MVDs) {
+			MultivaluedDependency mvd = new MultivaluedDependency(premultivalued, this);
+			if (mvd.getIsProperDependency()) {
+				boolean duplicateCheck = false;
+				for (MultivaluedDependency m : mvds) {
+					if (m.getName().equals(mvd.getName())) {
+						integrityCheckErrorMsg = "Duplicate multivalued dependency encountered: " + m.getName();
+						passedIntegrityChecks = false;
+						return;
+					}
+				}
+				if (!duplicateCheck) {
+					mvds.add(mvd);
 				}
 			}
 		}
-		Collections.sort(fds);
-		sortFDs();
+		Collections.sort(mvds);
 	}
 	
 	protected void sortFDs() {
-		Collections.sort(workingFDs);
 		Collections.sort(derivedFDs);
 	}
 	
@@ -183,14 +207,13 @@ public class Relation {
 	
 	protected void addDerivedFunctionalDependency(final FunctionalDependency f) {
 		boolean duplicateCheck = true;
-		for (FunctionalDependency fd : workingFDs) {
-			if (fd.getFDName().equals(f.getFDName())) {
+		for (FunctionalDependency fd1 : derivedFDs) {
+			if (fd1.getFDName().equals(f.getFDName())) {
 				duplicateCheck = false;
 				break;
 			}
 		}
 		if (duplicateCheck) {
-			workingFDs.add(f);
 			derivedFDs.add(f);
 		}
 		return;
@@ -214,6 +237,10 @@ public class Relation {
 	
 	public List<FunctionalDependency> getDerivedFDs() {
 		return derivedFDs;
+	}
+	
+	public List<MultivaluedDependency> getMVDs() {
+		return mvds;
 	}
 	
 	public List<FunctionalDependency> getMinimalCover() {

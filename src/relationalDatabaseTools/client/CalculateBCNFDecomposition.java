@@ -24,12 +24,6 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 	private List<Relation> threeNFDecomposedRs;
 	private List<FunctionalDependency> pureBCNFLostFDs;
 	private List<FunctionalDependency> threeNFLostFDs;
-
-	public CalculateBCNFDecomposition(final Relation inputRelation) {
-		super(inputRelation);
-		resultWithPossibleDuplicates = new ArrayList<>();
-		this.threenfDecomposition = null;
-	}
 	
 	public CalculateBCNFDecomposition(final Calculate3NFDecomposition threenfDecomposition) {
 		super(threenfDecomposition.getInputRelation());

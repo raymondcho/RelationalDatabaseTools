@@ -10,6 +10,9 @@ import java.util.List;
  * 
  */
 public class RDTUtils {
+	
+	public static final String functionalDependencyArrow = "-->";
+	public static final String multivaliedDependencyArrow = "-->->";
 
 	/**
 	 * @param attributeList

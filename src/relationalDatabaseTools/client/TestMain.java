@@ -5,12 +5,14 @@ import java.util.List;
 public class TestMain {
 	
 	public static void main(String[] args) {
-		String attributes = "R(A,B,C,D,E,F,G)";
-		String functionalDependencies = "B->D; D,G->C; B,D->E; A,G->B;A,D,G->B;A,D,G->C";
+		String attributes = "R(NAME, STREET, CITY, TITLE, YEAR)";
+		String functionalDependencies = "";
+		String multivaluedDependencies = "NAME->STREET,CITY";
 //		String attributes = "R(TITLE, YEAR, STUDIONAME, PRESIDENT, PRESADDR)";
 //		String functionalDependencies = "TITLE, YEAR -> STUDIONAME; STUDIONAME -> PRESIDENT; PRESIDENT -> PRESADDR";
 		Relation relation = new Relation(attributes);
 		relation.addFunctionalDependencies(functionalDependencies);
+		relation.addMultivaluedDependencies(multivaluedDependencies);
 		if (!relation.hasPassedIntegrityChecks()) {
 			System.out.println("Failed integrity check.");
 			System.out.println(relation.getIntegrityCheckErrorMsg());
@@ -42,7 +44,9 @@ public class TestMain {
 		System.out.println(normalForms.getSecondNormalFormMsg());
 		System.out.println(normalForms.getThirdNormalFormMsg());
 		System.out.println(normalForms.getBCNFMsg());
-		CalculateBCNFDecomposition bcnf = new CalculateBCNFDecomposition(relation);
+		System.out.println(normalForms.getFourthNormalFormMsg());
+		Calculate3NFDecomposition threeNF = new Calculate3NFDecomposition(relation);
+		CalculateBCNFDecomposition bcnf = new CalculateBCNFDecomposition(threeNF);
 		bcnf.decompose();
 		System.out.println(bcnf.getOutputMsg());
 		System.out.println("Results with possible duplicates: ");

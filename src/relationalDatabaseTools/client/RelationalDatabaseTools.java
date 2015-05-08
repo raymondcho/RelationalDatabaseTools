@@ -24,6 +24,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 	private final HorizontalPanel panel_1 = new HorizontalPanel();
 	private final HorizontalPanel panel_2 = new HorizontalPanel();
 	private final HorizontalPanel panel_3 = new HorizontalPanel();
+	private final HorizontalPanel panel_4 = new HorizontalPanel();
 	
 	private final Label label_1 = new Label("Enter the relation schema in form R(A,B,C,AB,ABC)");
 	private final Label label_1b = new Label("Use commas to separate attributes. Spaces are optional. Inputs are case-insensitive.");
@@ -35,7 +36,12 @@ public class RelationalDatabaseTools implements EntryPoint {
 	private final TextBox textBox_2 = new TextBox();
 	private final VerticalPanel secondaryFDPanel = new VerticalPanel();
 	
-	private final Button button_1 = new Button("Calculate");
+	private final Label label_3 = new Label("Enter all given multivalued dependencies in form A -> B; AB -> C; B,C ->A (same as functional dependencies)");
+	private final Label label_3b = new Label("Leave blank if there are none.");
+	private final TextBox textBox_3 = new TextBox();
+
+	
+	private final Button calculateButton = new Button("Calculate");
 	private final Button resetButton = new Button("Reset");
 	
 	private Label outputLabel = new Label();
@@ -62,7 +68,6 @@ public class RelationalDatabaseTools implements EntryPoint {
 		
 		secondaryFDPanel.add(label_2b);
 		secondaryFDPanel.add(label_2c);
-		secondaryFDPanel.addStyleName("panels");
 		
 		panel_2.add(label_2);
 		panel_2.add(textBox_2);
@@ -70,19 +75,26 @@ public class RelationalDatabaseTools implements EntryPoint {
 		panel_2.add(secondaryFDPanel);
 		panel_2.addStyleName("panels");
 		
-		panel_3.add(button_1);
-		button_1.addClickHandler(new ClickHandler() {
+		panel_3.add(label_3);
+		panel_3.add(textBox_3);
+		panel_3.add(label_3b);
+		textBox_3.addStyleName("textboxes");
+		panel_3.addStyleName("panels");
+		
+		panel_4.add(calculateButton);
+		calculateButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				calculate();
 			}
 		});
-		panel_3.addStyleName("panels");
+		panel_4.addStyleName("panels");
 		
 		mainPanel.add(resetButton);
 		mainPanel.add(panel_1);
 		mainPanel.add(panel_2);
 		mainPanel.add(panel_3);
+		mainPanel.add(panel_4);
 		mainPanel.add(errorLabel);
 		mainPanel.add(outputLabel);
 		outputs.add(outputLabel);
@@ -99,6 +111,8 @@ public class RelationalDatabaseTools implements EntryPoint {
 		textBox_1.setText(completeRelation);
 		String completeFDs = textBox_2.getText().toUpperCase();
 		textBox_2.setText(completeFDs);
+		String completeMVDs = textBox_3.getText().toUpperCase();
+		textBox_3.setText(completeMVDs);
 		clearError();
 		clearOutput();
 		if (Relation.isNullOrEmpty(completeRelation)) {
@@ -122,15 +136,32 @@ public class RelationalDatabaseTools implements EntryPoint {
 			displayError("Input functional dependencies must only contain letters, commas, semi-colons, hyphens, and greater-than.");
 			return;
 		}
+		if (!Relation.functionalContainsSafeChars(completeMVDs)) {
+			displayError("Input multivalued dependencies must only contain letters, commas, semi-colons, hyphens, and greater-than.");
+			return;
+		}
 		if (!relation.hasPassedIntegrityChecks()) {
 			displayError(relation.getIntegrityCheckErrorMsg());
 			return;
 		}
-		if (!Relation.functionalContainsAtLeastOneDependency(completeFDs)) {
-			displayError("Warning: encountered a functional dependency that is "
-					+ "incomplete or improperly formatted or input functional dependencies is empty.");
+		boolean functionalCheck = Relation.functionalContainsAtLeastOneDependency(completeFDs);
+		boolean multivaluedCheck = Relation.functionalContainsAtLeastOneDependency(completeMVDs);
+		if (completeMVDs.isEmpty()) {
+			multivaluedCheck = true;
+		}
+		String outputErrorCheck = "";
+		if (!functionalCheck) {
+			outputErrorCheck += "Warning: encountered a functional dependency that is "
+					+ "incomplete or improperly formatted or input functional dependencies is empty. ";
+		}
+		if (!multivaluedCheck) {
+			outputErrorCheck += "Warning: encountered a multivalued dependency that is incomplete or improperly formatted.";
+		}
+		if (!outputErrorCheck.isEmpty()) {
+			displayError(outputErrorCheck);
 		}
 		relation.addFunctionalDependencies(completeFDs);
+		relation.addMultivaluedDependencies(completeMVDs);
 		if (!relation.hasPassedIntegrityChecks()) {
 			displayError(relation.getIntegrityCheckErrorMsg());
 			return;
@@ -168,6 +199,27 @@ public class RelationalDatabaseTools implements EntryPoint {
 			for (int i = 0; i < fds.size(); i++) {
 				appendOutput(fds.get(i).getFDName(), false);
 				if (i < fds.size() - 1) {
+					appendOutput("; ", false);
+				}
+			}
+			appendOutput(".", false);
+		}
+		
+		// Print out list of given multivalued dependencies
+		List<MultivaluedDependency> mvds = relation.getMVDs();
+		if (mvds.isEmpty()) {
+			appendOutput("No input multivalued dependencies.", true);
+		} else {
+			String multivalued_dependency;
+			if (mvds.size() == 1) {
+				multivalued_dependency = "multivalued dependency: ";
+			} else {
+				multivalued_dependency = "multivalued dependencies: ";
+			}
+			appendOutput("Given input " + multivalued_dependency, true);
+			for (int i = 0; i < mvds.size(); i++) {
+				appendOutput(mvds.get(i).getName(), false);
+				if (i < mvds.size() - 1) {
 					appendOutput("; ", false);
 				}
 			}
@@ -320,6 +372,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 		appendOutput(normalForms.getSecondNormalFormMsg(), true);
 		appendOutput(normalForms.getThirdNormalFormMsg(), true);
 		appendOutput(normalForms.getBCNFMsg(), true);
+		appendOutput(normalForms.getFourthNormalFormMsg(), true);
 		
 		appendOutput("---------------", true);
 		// Output 3NF decomposition
@@ -411,6 +464,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 	private void clearInput() {
 		textBox_1.setText("");
 		textBox_2.setText("");
+		textBox_3.setText("");
 	}
 	
 	private void resetDisplay() {
