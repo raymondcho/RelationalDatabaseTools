@@ -30,6 +30,21 @@ public class RDTUtils {
 		}
 		return false;
 	}
+	
+	/**
+	 * @param attributeList
+	 * @return True if the given attribute list does not contain duplicate attributes and false otherwise.
+	 */
+	protected static boolean attributeListContainsUniqueAttributes(final List<Attribute> attributeList) {
+		for (int i = 0; i < attributeList.size(); i++) {
+			for (int j = 0; j < attributeList.size(); j++) {
+				if (i != j && attributeList.get(i).getName().equals(attributeList.get(j).getName())) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * @param firstAttributeList

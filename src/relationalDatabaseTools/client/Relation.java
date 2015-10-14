@@ -142,6 +142,11 @@ public class Relation {
 					fds.add(fd);
 				}
 			}
+			if (!RDTUtils.attributeListContainsUniqueAttributes(fd.getLeftHandAttributes()) || !RDTUtils.attributeListContainsUniqueAttributes(fd.getRightHandAttributes())) {
+				integrityCheckErrorMsg = "An input functional dependency contains duplicate attributes on the same side: " + fd.getFDName();
+				passedIntegrityChecks = false;
+				return;
+			}
 		}
 		Collections.sort(fds);
 	}
@@ -172,6 +177,11 @@ public class Relation {
 				if (!duplicateCheck) {
 					mvds.add(mvd);
 				}
+			}
+			if (!RDTUtils.attributeListContainsUniqueAttributes(mvd.getLeftHandAttributes()) || !RDTUtils.attributeListContainsUniqueAttributes(mvd.getRightHandAttributes())) {
+				integrityCheckErrorMsg = "An input multivalued dependency contains duplicate attributes on the same side: " + mvd.getName();
+				passedIntegrityChecks = false;
+				return;
 			}
 		}
 		Collections.sort(mvds);
