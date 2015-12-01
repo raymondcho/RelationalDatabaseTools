@@ -48,6 +48,9 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 		}
 		
 		BCNFDecomposeMethodWithout3NF();
+		if (threenfDecomposition.getOutputRelations().isEmpty()) {
+			threenfDecomposition.force3NFDecomposition();
+		}
 		if (!threenfDecomposition.getOutputRelations().isEmpty()) {
 			decomposeFrom3NF();
 		}

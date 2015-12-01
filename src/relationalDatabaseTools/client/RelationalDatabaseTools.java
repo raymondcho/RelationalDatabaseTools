@@ -354,12 +354,9 @@ public class RelationalDatabaseTools implements EntryPoint {
 		if (derivedFDs.isEmpty()) {
 			appendOutput("There are no new functional dependencies aside from the pre-existing ones.", true);
 		} else {
-			appendOutput("Full set of functional dependencies: ", true);
+			appendOutput("Full set of non-trivial functional dependencies: ", true);
 			for (int i = 0; i < derivedFDs.size(); i++) {
-				appendOutput(derivedFDs.get(i).getFDName(), false);
-				if (i < derivedFDs.size() - 1) {
-					appendOutput("; ", false);
-				}
+				appendOutput(derivedFDs.get(i).getFDName(), true);
 			}
 		}
 		

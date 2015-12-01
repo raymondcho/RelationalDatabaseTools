@@ -18,12 +18,20 @@ public class Calculate3NFDecomposition extends CalculateDecomposition {
 
 	@Override
 	protected void decompose() {
+		decompose(false);
+	}
+	
+	protected void force3NFDecomposition() {
+		decompose(true);
+	}
+	
+	private void decompose(final boolean force3NFDecomposition) {
 		if (getInputRelation().getMinimalCover().isEmpty()) {
 			setOutputMsgFlag(true);
 			setOutputMsg("No functional dependencies in minimal cover, therefore input relation is already in 3NF.");
 			return;
 		}
-		if (getInputRelation().getNormalFormsResults().isIn3NF()) {
+		if (getInputRelation().getNormalFormsResults().isIn3NF() && !force3NFDecomposition) {
 			setOutputMsgFlag(true);
 			setOutputMsg("Input relation is already in 3NF. No decomposition necessary. ");
 			return;
