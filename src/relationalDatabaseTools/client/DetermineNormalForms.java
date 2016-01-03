@@ -360,15 +360,12 @@ public class DetermineNormalForms {
 		}
 		// For each MVD A -->-> B
 		for (MultivaluedDependency m : combinedMVDs) {
-			System.out.println(m.getName());
 			// Check if the MVD is trivial
 			if (isTrivialMultivaluedDependency(m)) {
-				System.out.println("Trivial");
 				continue;
 			}
 			// Check if the A is a superkey of relation R
 			if (isAKeyOrSuperKey(m)) {
-				System.out.println("Key");
 				continue;
 			}
 			// Having not satisfied at least one of the previous conditions, the

@@ -33,13 +33,10 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 
 	@Override
 	protected void decompose() {
-		if (getInputRelation().getMinimalCover().isEmpty()) {
-			MinimalFDCover.determineMinimalCover(getInputRelation());
-			if (getInputRelation().getMinimalCover().isEmpty()) {
-				setOutputMsgFlag(true);
-				setOutputMsg("No functional dependencies in minimal cover, therefore input relation is already in BCNF.");
-				return;
-			}
+		if (getInputRelation().getInputFDs().isEmpty()) {
+			setOutputMsgFlag(true);
+			setOutputMsg("No functional dependencies provided in input relation, therefore input relation is already in BCNF.");
+			return;
 		}
 		if (getInputRelation().getNormalFormsResults().isInBCNF()) {
 			setOutputMsgFlag(true);
@@ -56,6 +53,7 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 		}
 		
 		List<FunctionalDependency> missingFDs = null;
+
 		if (threenfDecomposition.getOutputRelations().isEmpty()) {
 			setOutputMsg("Decomposing input relation into BCNF relations using input relation as source. ");
 			for (Relation outputR : pureBCNFDecomposedRs) {
@@ -142,7 +140,7 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 		}
 		for (FunctionalDependency f : r.getNormalFormsResults().getBCNFViolatingFDs()) {
 			Closure leftSideClosure = RDTUtils.findClosureWithLeftHandAttributes(f.getLeftHandAttributes(), r.getClosures());
-			List<FunctionalDependency> r1FDs = RDTUtils.fetchFDsOfDecomposedR(r.getMinimalCover(), leftSideClosure.getClosure());
+			List<FunctionalDependency> r1FDs = RDTUtils.fetchFDsOfDecomposedR(r.getInputFDs(), leftSideClosure.getClosure());
 			Relation r1 = new Relation(r.getName() + "_" + counter++, leftSideClosure.getClosure(), r1FDs);
 			List<Attribute> r2Attributes = new ArrayList<>();
 			for (Attribute a : f.getLeftHandAttributes()) {
@@ -157,7 +155,7 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 					}
 				}
 			}
-			List<FunctionalDependency> r2FDs = RDTUtils.fetchFDsOfDecomposedR(r.getMinimalCover(), r2Attributes);
+			List<FunctionalDependency> r2FDs = RDTUtils.fetchFDsOfDecomposedR(r.getInputFDs(), r2Attributes);
 			Relation r2 = new Relation(r.getName() + "_" + counter++, r2Attributes, r2FDs);
 			result.addAll(decomposeBCNFHelper(r1));
 			result.addAll(decomposeBCNFHelper(r2));
@@ -210,7 +208,7 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 	
 	private List<FunctionalDependency> findEliminatedFunctionalDependencies(final List<Relation> outputRelations) {
 		List<FunctionalDependency> missingFDs = new ArrayList<>();
-		for (FunctionalDependency originalFD : getInputRelation().getFDs()) {
+		for (FunctionalDependency originalFD : getInputRelation().getInputFDs()) {
 			String originalFDname = originalFD.getFDName();
 			boolean found = false;
 			for (Relation bcnfR : outputRelations) {

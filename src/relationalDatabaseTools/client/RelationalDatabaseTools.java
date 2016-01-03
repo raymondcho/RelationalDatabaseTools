@@ -379,7 +379,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 		
 		// Output 3NF decomposition
 		appendMajorBreak();
-		appendOutput("Decomposing input relation into 3NF (lossless and preserving all functional dependencies): ", true);
+		appendOutput("Decomposing input relation into 3NF using canonical functional dependency cover (lossless and preserving all functional dependencies): ", true);
 		Calculate3NFDecomposition threeNF = new Calculate3NFDecomposition(relation);
 		if (normalForms.isIn3NF()) {
 			appendOutput("Input relation is already in 3NF. No decomposition necessary. ", true);
@@ -395,7 +395,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 		
 		// Output BCNF decomposition
 		appendMajorBreak();
-		appendOutput("Decomposing input relation into BCNF (lossless but not necessarily functional dependency preserving): ", true);
+		appendOutput("Decomposing input relation into BCNF using given input functional dependency set (lossless but not necessarily functional dependency preserving): ", true);
 		if (normalForms.isInBCNF()) {
 			appendOutput("Input relation is already in BCNF. No decomposition necessary. ", true);
 		} else {
