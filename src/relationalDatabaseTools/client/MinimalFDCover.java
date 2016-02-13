@@ -113,6 +113,13 @@ public class MinimalFDCover {
 				blocked[i] = 1;
 			}
 		}
+		int k = 0;
+		for (FunctionalDependency fdLost : fMin) {
+			if (blocked[k] == 1) {
+				relation.addGivenToMinCoverLostFDs(fdLost);
+			}
+			k++;
+		}
 		fMin.clear();
 		fMin.addAll(minimizedSetFDs);
 		// Now consolidate FDs that have common left-hand side

@@ -129,7 +129,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 			return;
 		}
 		if (!Relation.schemaContainsParenthesisPair(completeRelation)) {
-			displayError("Input relation schema must contain only one pair of parenthesis.");
+			displayError("Input relation schema must contain only one pair of properly formatted parenthesis: R( )");
 			return;
 		}
 		relation = new Relation(completeRelation);
@@ -344,6 +344,23 @@ public class RelationalDatabaseTools implements EntryPoint {
 			}
 			appendOutput(" }", false);
 		}
+		List<FunctionalDependency> givenToMinCoverLostFDs = relation.getGivenToMinCoverLostFDs();
+		if (givenToMinCoverLostFDs.isEmpty()) {
+			appendOutput("All input functional dependencies were included in the minimal cover set.", true);
+		} else {
+			if (givenToMinCoverLostFDs.size() == 1) {
+				appendOutput("The following input functional dependency was not included in the minimal cover set: ", true);
+			} else {
+				appendOutput("The following input functional dependencies were not included in the minimal cover set: ", true);
+			}
+			for (int i = 0; i < givenToMinCoverLostFDs.size(); i++) {
+				appendOutput(givenToMinCoverLostFDs.get(i).getFDName(), false);
+				if (i < givenToMinCoverLostFDs.size() - 1) {
+					appendOutput("; ", false);
+				}
+			}
+			appendOutput(".", false);
+		}
 		
 
 		// Print out derived functional dependencies
@@ -379,7 +396,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 		
 		// Output 3NF decomposition
 		appendMajorBreak();
-		appendOutput("Decomposing input relation into 3NF using canonical functional dependency cover (lossless and preserving all functional dependencies): ", true);
+		appendOutput("Decomposing input relation into 3NF using canonical functional dependency cover (lossless and preserving all minimal cover set functional dependencies): ", true);
 		Calculate3NFDecomposition threeNF = new Calculate3NFDecomposition(relation);
 		if (normalForms.isIn3NF()) {
 			appendOutput("Input relation is already in 3NF. No decomposition necessary. ", true);
@@ -395,7 +412,8 @@ public class RelationalDatabaseTools implements EntryPoint {
 		
 		// Output BCNF decomposition
 		appendMajorBreak();
-		appendOutput("Decomposing input relation into BCNF using given input functional dependency set (lossless but not necessarily functional dependency preserving): ", true);
+		appendOutput("Decomposing input relation into BCNF relations (lossless but not necessarily functional dependency preserving). Will attempt two parallel decompositions: one from the input relation and the second from the set of decomposed 3NF relations: ", true);
+		appendMinorBreak();
 		if (normalForms.isInBCNF()) {
 			appendOutput("Input relation is already in BCNF. No decomposition necessary. ", true);
 		} else {
@@ -404,6 +422,71 @@ public class RelationalDatabaseTools implements EntryPoint {
 			}
 			CalculateBCNFDecomposition bcnf = new CalculateBCNFDecomposition(threeNF);
 			bcnf.decompose();
+			
+			// Start with input relation source BCNF decomposition
+			appendOutput("Decomposing input relation into BCNF relations using input relation as source. ", true);
+			if (bcnf.getBcnfDecomposedWithDuplicates().size() == bcnf.getPureBCNFDecomposedRs().size()) {
+				appendOutput("Final set of decomposed BCNF relations: ", true);
+				for (Relation r : bcnf.getPureBCNFDecomposedRs()) {
+					appendOutput(r.printRelation(), true);
+				}
+			} else {
+				appendOutput("Initial set of decomposed BCNF relations: ", true);
+				for (Relation r : bcnf.getBcnfDecomposedWithDuplicates()) {
+					appendOutput(r.printRelation(), true);
+				}
+				appendOutput("Final set of decomposed BCNF relations (removing duplicate and subset relations): ", true);
+				for (Relation r : bcnf.getPureBCNFDecomposedRs()) {
+					appendOutput(r.printRelation(), true);
+				}
+			}
+			List<FunctionalDependency> pureBCNFLostFDs = bcnf.getPureBCNFLostFDs();
+			if (pureBCNFLostFDs.isEmpty()) {
+				appendOutput("No input functional dependencies were lost.", true);
+			} else {
+				appendOutput("The following input functional dependencies were lost (note that a lost input functional dependency can be safely ignored if it is not part of the minimal cover set of functional dependencies): ", true);
+				for (int i = 0; i < pureBCNFLostFDs.size(); i++) {
+					appendOutput(pureBCNFLostFDs.get(i).getFDName(), false);
+					if (i < pureBCNFLostFDs.size() - 1) {
+						appendOutput("; ", false);
+					}
+				}
+				appendOutput(".", false);
+			}
+			
+			appendMinorBreak();
+			
+			// Next display 3NF relation source BCNF decomposition
+			appendOutput("Decomposing input relation into BCNF relations using decomposed 3NF relations as sources. ", true);
+			if (bcnf.getThreeNFDecomposedWithDuplicates().size() == bcnf.getThreeNFDecomposedRs().size()) {
+				appendOutput("Final set of decomposed BCNF relations: ", true);
+				for (Relation r : bcnf.getThreeNFDecomposedRs()) {
+					appendOutput(r.printRelation(), true);
+				}
+			} else {
+				appendOutput("Initial set of decomposed BCNF relations: ", true);
+				for (Relation r : bcnf.getThreeNFDecomposedWithDuplicates()) {
+					appendOutput(r.printRelation(), true);
+				}
+				appendOutput("Final set of decomposed BCNF relations (removing duplicate and subset relations): ", true);
+				for (Relation r : bcnf.getThreeNFDecomposedRs()) {
+					appendOutput(r.printRelation(), true);
+				}
+			}
+			List<FunctionalDependency> threeNFLostFDs = bcnf.getThreeNFLostFDs();
+			if (threeNFLostFDs.isEmpty()) {
+				appendOutput("No functional dependencies from the minimal cover set were lost.", true);
+			} else {
+				appendOutput("The following minimal cover set functional dependencies were lost: ", true);
+				for (int i = 0; i < pureBCNFLostFDs.size(); i++) {
+					appendOutput(pureBCNFLostFDs.get(i).getFDName(), false);
+					if (i < pureBCNFLostFDs.size() - 1) {
+						appendOutput("; ", false);
+					}
+				}
+				appendOutput(".", false);
+			}
+			
 			appendOutput(bcnf.getOutputMsg(), true);
 			List<Relation> resultsWithDuplicates = bcnf.getResultWithDuplicates();
 			List<Relation> outputBCNFRelations = bcnf.getOutputRelations();
@@ -423,7 +506,6 @@ public class RelationalDatabaseTools implements EntryPoint {
 			}
 			
 		}
-		
 		
 	}
 	

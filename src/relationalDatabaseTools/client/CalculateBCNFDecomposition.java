@@ -51,70 +51,39 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 		if (!threenfDecomposition.getOutputRelations().isEmpty()) {
 			decomposeFrom3NF();
 		}
-		
-		List<FunctionalDependency> missingFDs = null;
 
-		if (threenfDecomposition.getOutputRelations().isEmpty()) {
-			setOutputMsg("Decomposing input relation into BCNF relations using input relation as source. ");
-			for (Relation outputR : pureBCNFDecomposedRs) {
-				addRelationtoOutputList(outputR);
-			}
-			resultWithPossibleDuplicates.addAll(bcnfDecomposedWithDuplicates);
-			missingFDs = pureBCNFLostFDs;
-		} else if (threeNFLostFDs.size() < pureBCNFLostFDs.size()) {
-			setOutputMsg("Decomposing input relation into BCNF relations using decomposed 3NF relations as sources. ");
-			for (Relation outputR : threeNFDecomposedRs) {
-				addRelationtoOutputList(outputR);
-			}
-			resultWithPossibleDuplicates.addAll(threeNFDecomposedWithDuplicates);
-			missingFDs = threeNFLostFDs;
-		} else if (threeNFLostFDs.size() > pureBCNFLostFDs.size()) {
-			setOutputMsg("Decomposing input relation into BCNF relations using input relation as source. ");
-			for (Relation outputR : pureBCNFDecomposedRs) {
-				addRelationtoOutputList(outputR);
-			}
-			resultWithPossibleDuplicates.addAll(bcnfDecomposedWithDuplicates);
-			missingFDs = pureBCNFLostFDs;
-		} else {
-			if (threeNFDecomposedRs.size() <= pureBCNFDecomposedRs.size()) {
-				setOutputMsg("Decomposing input relation into BCNF relations using decomposed 3NF relations as sources. ");
-				for (Relation outputR : threeNFDecomposedRs) {
-					addRelationtoOutputList(outputR);
-				}
-				resultWithPossibleDuplicates.addAll(threeNFDecomposedWithDuplicates);
-				missingFDs = threeNFLostFDs;
-			} else {
-				setOutputMsg("Decomposing input relation into BCNF relations using input relation as source. ");
-				for (Relation outputR : pureBCNFDecomposedRs) {
-					addRelationtoOutputList(outputR);
-				}
-				resultWithPossibleDuplicates.addAll(bcnfDecomposedWithDuplicates);
-				missingFDs = pureBCNFLostFDs;
-			}
-		}
-		
-		appendOutputMsg(" Finished decomposing input relation into BCNF relations:");
-		if (missingFDs.isEmpty()) {
-			appendOutputMsg(" (No functional dependencies were lost) ");
-		} else {
-			appendOutputMsg(" Warning: the following functional dependencies were lost: ");
-			for (int i = 0; i < missingFDs.size(); i++) {
-				appendOutputMsg(missingFDs.get(i).getFDName());
-				if (i < missingFDs.size() - 1) {
-					appendOutputMsg("; ");
-				}
-			}
-			appendOutputMsg(". ");
-		}
-		setOutputMsgFlag(true);
 		return;
 	}
 	
+	public List<Relation> getPureBCNFDecomposedRs() {
+		return pureBCNFDecomposedRs;
+	}
+	
+	public List<Relation> getBcnfDecomposedWithDuplicates() {
+		return bcnfDecomposedWithDuplicates;
+	}
+
+	public List<FunctionalDependency> getPureBCNFLostFDs() {
+		return pureBCNFLostFDs;
+	}
+
+	public List<Relation> getThreeNFDecomposedWithDuplicates() {
+		return threeNFDecomposedWithDuplicates;
+	}
+
+	public List<Relation> getThreeNFDecomposedRs() {
+		return threeNFDecomposedRs;
+	}
+
+	public List<FunctionalDependency> getThreeNFLostFDs() {
+		return threeNFLostFDs;
+	}
+
 	private void BCNFDecomposeMethodWithout3NF() {
 		List<Relation> workingOutputRelations = decomposeBCNFHelper(getInputRelation());
 		bcnfDecomposedWithDuplicates = workingOutputRelations;
 		List<Relation> eliminatedDuplicatesAndSubsets = eliminateDuplicateSubsetRelations(workingOutputRelations);
-		List<FunctionalDependency> missingFDs = findEliminatedFunctionalDependencies(eliminatedDuplicatesAndSubsets);
+		List<FunctionalDependency> missingFDs = findEliminatedFunctionalDependencies(eliminatedDuplicatesAndSubsets, getInputRelation().getInputFDs());
 		pureBCNFDecomposedRs = eliminatedDuplicatesAndSubsets;
 		pureBCNFLostFDs = missingFDs;
 	}
@@ -173,7 +142,7 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 		}
 		threeNFDecomposedWithDuplicates = workingBCNFRelations;
 		List<Relation> purgeDuplicatesAndSubsets = eliminateDuplicateSubsetRelations(workingBCNFRelations);
-		List<FunctionalDependency> lostFDs = findEliminatedFunctionalDependencies(purgeDuplicatesAndSubsets);
+		List<FunctionalDependency> lostFDs = findEliminatedFunctionalDependencies(purgeDuplicatesAndSubsets, getInputRelation().getMinimalCover());
 		threeNFDecomposedRs = purgeDuplicatesAndSubsets;
 		threeNFLostFDs = lostFDs;
 	}
@@ -206,9 +175,12 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 		return output;
 	}
 	
-	private List<FunctionalDependency> findEliminatedFunctionalDependencies(final List<Relation> outputRelations) {
+	private List<FunctionalDependency> findEliminatedFunctionalDependencies(final List<Relation> outputRelations, final List<FunctionalDependency> inputFDs) {
+		if (outputRelations == null || inputFDs == null) {
+			throw new IllegalArgumentException("Input list of relations or input list of functional dependencies is null.");
+		}
 		List<FunctionalDependency> missingFDs = new ArrayList<>();
-		for (FunctionalDependency originalFD : getInputRelation().getInputFDs()) {
+		for (FunctionalDependency originalFD : inputFDs) {
 			String originalFDname = originalFD.getFDName();
 			boolean found = false;
 			for (Relation bcnfR : outputRelations) {
@@ -229,5 +201,10 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 
 	protected List<Relation> getResultWithDuplicates() {
 		return resultWithPossibleDuplicates;
+	}
+	
+	@Override
+	protected List<Relation> getOutputRelations() {
+		return new ArrayList<Relation>();
 	}
 }

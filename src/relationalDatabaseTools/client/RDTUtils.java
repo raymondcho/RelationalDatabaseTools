@@ -101,7 +101,7 @@ public class RDTUtils {
 		}
 		return true;
 	}
-	
+		
 	/**
 	 * 
 	 * @param leftHand
