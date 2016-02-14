@@ -76,7 +76,7 @@ public class MinimalFDCover {
 							if (!RDTUtils.isFunctionalDependencyAlreadyInFDList(reducedFD, minimizedLHS)) {
 								minimizedLHS.add(reducedFD);
 							}
-							if (!RDTUtils.isFunctionalDependencyAlreadyInFDList(f, lostFDs)) {
+							if (RDTUtils.isFunctionalDependencyAlreadyInFDList(f, relation.getInputFDs()) && !RDTUtils.isFunctionalDependencyAlreadyInFDList(f, lostFDs)) {
 								lostFDs.add(f);
 							}
 						}
@@ -128,7 +128,7 @@ public class MinimalFDCover {
 		}
 		int k = 0;
 		for (FunctionalDependency fdLost : fMin) {
-			if (blocked[k] == 1 && !RDTUtils.isFunctionalDependencyAlreadyInFDList(fdLost, lostFDs)) {
+			if (blocked[k] == 1 && RDTUtils.isFunctionalDependencyAlreadyInFDList(fdLost, relation.getInputFDs()) && !RDTUtils.isFunctionalDependencyAlreadyInFDList(fdLost, lostFDs)) {
 				lostFDs.add(fdLost);
 			}
 			k++;

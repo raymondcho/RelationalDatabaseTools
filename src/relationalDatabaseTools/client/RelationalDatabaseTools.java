@@ -432,7 +432,7 @@ public class RelationalDatabaseTools implements EntryPoint {
 			bcnf.decompose();
 			
 			// Start with input relation source BCNF decomposition
-			appendOutput("Decomposing input relation into BCNF relations using input relation as source. ", true);
+			appendOutput("Decomposing input relation into BCNF relations using input relation and input functional dependencies as sources. ", true);
 			if (bcnf.getBcnfDecomposedWithDuplicates().size() == bcnf.getPureBCNFDecomposedRs().size()) {
 				appendOutput("Final set of decomposed BCNF relations: ", true);
 				for (Relation r : bcnf.getPureBCNFDecomposedRs()) {
@@ -452,7 +452,11 @@ public class RelationalDatabaseTools implements EntryPoint {
 			if (pureBCNFLostFDs.isEmpty()) {
 				appendOutput("No input functional dependencies were lost.", true);
 			} else {
-				appendOutput("The following input functional dependencies were lost (note that a lost input functional dependency can be safely ignored if it is not part of the minimal cover set of functional dependencies): ", true);
+				if (pureBCNFLostFDs.size() == 1) {
+					appendOutput("The following input functional dependency was lost: ", true);
+				} else {
+					appendOutput("The following input functional dependencies were lost: ", true);
+				}
 				for (int i = 0; i < pureBCNFLostFDs.size(); i++) {
 					appendOutput(pureBCNFLostFDs.get(i).getFDName(), false);
 					if (i < pureBCNFLostFDs.size() - 1) {
@@ -460,12 +464,13 @@ public class RelationalDatabaseTools implements EntryPoint {
 					}
 				}
 				appendOutput(".", false);
+				appendOutput("Note that a lost input functional dependency can be safely ignored if it is not part of the minimal cover set of functional dependencies", true);
 			}
 			
 			appendMinorBreak();
 			
 			// Next display 3NF relation source BCNF decomposition
-			appendOutput("Decomposing input relation into BCNF relations using decomposed 3NF relations as sources. ", true);
+			appendOutput("Decomposing input relation into BCNF relations using decomposed 3NF relations and the minimal cover set of functional dependencies as sources. ", true);
 			if (bcnf.getThreeNFDecomposedWithDuplicates().size() == bcnf.getThreeNFDecomposedRs().size()) {
 				appendOutput("Final set of decomposed BCNF relations: ", true);
 				for (Relation r : bcnf.getThreeNFDecomposedRs()) {
@@ -485,7 +490,11 @@ public class RelationalDatabaseTools implements EntryPoint {
 			if (threeNFLostFDs.isEmpty()) {
 				appendOutput("No functional dependencies from the minimal cover set were lost.", true);
 			} else {
-				appendOutput("The following minimal cover set functional dependencies were lost: ", true);
+				if (threeNFLostFDs.size() == 1) {
+					appendOutput("The following minimal cover set functional dependency was lost: ", true);
+				} else {
+					appendOutput("The following minimal cover set functional dependencies were lost: ", true);
+				}
 				for (int i = 0; i < pureBCNFLostFDs.size(); i++) {
 					appendOutput(pureBCNFLostFDs.get(i).getFDName(), false);
 					if (i < pureBCNFLostFDs.size() - 1) {
