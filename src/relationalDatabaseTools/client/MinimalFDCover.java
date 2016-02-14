@@ -14,6 +14,8 @@ import java.util.List;
 public class MinimalFDCover {
 	public static void determineMinimalCover(final Relation relation) {
 		List<FunctionalDependency> fMin = new ArrayList<>();
+		List<FunctionalDependency> lostFDs = new ArrayList<>();
+		
 		if (relation.getInputFDs().isEmpty()) {
 			// Input FDs is empty, so minimal cover is also empty.
 			return;
@@ -25,7 +27,7 @@ public class MinimalFDCover {
 		// Split FDs that have more than one attribute on right-side.
 		for (FunctionalDependency f : relation.getInputFDs()) {
 			if (f.getIsProperDependency()) {
-				if (f.getRightHandAttributes().size() == 1) {
+				if (f.getRightHandAttributes().size() == 1 && !RDTUtils.isFunctionalDependencyAlreadyInFDList(f, fMin)) {
 					fMin.add(f);
 				} else {
 					for (Attribute a : f.getRightHandAttributes()) {
@@ -33,7 +35,9 @@ public class MinimalFDCover {
 						rightSplitted.add(a);
 						FunctionalDependency splitted = new FunctionalDependency(f.getLeftHandAttributes(),
 								rightSplitted, relation);
-						fMin.add(splitted);
+						if (!RDTUtils.isFunctionalDependencyAlreadyInFDList(splitted, fMin)) {
+							fMin.add(splitted);
+						}
 					}
 				}
 			}
@@ -69,19 +73,28 @@ public class MinimalFDCover {
 						// Verify that new FD is legitimate (i.e., the closure of left side includes the attribute on right side
 						Closure verifyClosure = RDTUtils.findClosureWithLeftHandAttributes(reducedFD.getLeftHandAttributes(), relation.getClosures());
 						if (RDTUtils.attributeListContainsAttribute(verifyClosure.getClosure(), reducedFD.getRightHandAttributes().get(0))) {
-							minimizedLHS.add(reducedFD);
+							if (!RDTUtils.isFunctionalDependencyAlreadyInFDList(reducedFD, minimizedLHS)) {
+								minimizedLHS.add(reducedFD);
+							}
+							if (!RDTUtils.isFunctionalDependencyAlreadyInFDList(f, lostFDs)) {
+								lostFDs.add(f);
+							}
 						}
 					}
 				} else {
-					minimizedLHS.add(f);
+					if (!RDTUtils.isFunctionalDependencyAlreadyInFDList(f, minimizedLHS)) {
+						minimizedLHS.add(f);
+					}
 				}
 			} else {
-				minimizedLHS.add(f);
+				if (!RDTUtils.isFunctionalDependencyAlreadyInFDList(f, minimizedLHS)) {
+					minimizedLHS.add(f);
+				}
 			}
 		}
 		fMin.clear();
 		for (FunctionalDependency funcDe : minimizedLHS) {
-			if (funcDe.getIsProperDependency()) {
+			if (funcDe.getIsProperDependency() && !RDTUtils.isFunctionalDependencyAlreadyInFDList(funcDe, fMin)) {
 				fMin.add(funcDe);
 			}
 		}
@@ -115,10 +128,13 @@ public class MinimalFDCover {
 		}
 		int k = 0;
 		for (FunctionalDependency fdLost : fMin) {
-			if (blocked[k] == 1) {
-				relation.addGivenToMinCoverLostFDs(fdLost);
+			if (blocked[k] == 1 && !RDTUtils.isFunctionalDependencyAlreadyInFDList(fdLost, lostFDs)) {
+				lostFDs.add(fdLost);
 			}
 			k++;
+		}
+		for (FunctionalDependency fdLost : lostFDs) {
+			relation.addGivenToMinCoverLostFDs(fdLost);
 		}
 		fMin.clear();
 		fMin.addAll(minimizedSetFDs);

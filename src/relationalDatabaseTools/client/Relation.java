@@ -56,6 +56,7 @@ public class Relation {
 		passedIntegrityChecks = true;
 		integrityCheckErrorMsg = "";
 		this.attributes = attributes;
+		Collections.sort(this.attributes);
 		this.primeAttributes = new ArrayList<>();
 		this.nonPrimeAttributes = new ArrayList<>();
 		this.fds = fds;
@@ -261,7 +262,9 @@ public class Relation {
 	}
 	
 	protected void addGivenToMinCoverLostFDs(final FunctionalDependency f) {
-		givenToMinCoverLostFDs.add(f);
+		if (!RDTUtils.isFunctionalDependencyAlreadyInFDList(f, givenToMinCoverLostFDs)) {
+			givenToMinCoverLostFDs.add(f);
+		}
 	}
 	
 	public List<FunctionalDependency> getGivenToMinCoverLostFDs() {

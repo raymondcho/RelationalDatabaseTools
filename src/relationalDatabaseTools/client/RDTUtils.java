@@ -101,6 +101,21 @@ public class RDTUtils {
 		}
 		return true;
 	}
+	
+	protected static boolean isFunctionalDependencyAlreadyInFDList(final FunctionalDependency fd, final List<FunctionalDependency> fdList) {
+		if (fd == null || fdList == null) {
+			throw new IllegalArgumentException("Input null functional dependency or list of functional dependencies.");
+		}
+		if (fdList.isEmpty()) {
+			return false;
+		}
+		for (FunctionalDependency f : fdList) {
+			if (f.getFDName().equals(fd.getFDName())) {
+				return true;
+			}
+		}
+		return false;
+	}
 		
 	/**
 	 * 

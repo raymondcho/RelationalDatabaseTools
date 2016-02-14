@@ -348,18 +348,26 @@ public class RelationalDatabaseTools implements EntryPoint {
 		if (givenToMinCoverLostFDs.isEmpty()) {
 			appendOutput("All input functional dependencies were included in the minimal cover set.", true);
 		} else {
+			boolean showRemovalNote = false;
 			if (givenToMinCoverLostFDs.size() == 1) {
 				appendOutput("The following input functional dependency was not included in the minimal cover set: ", true);
 			} else {
 				appendOutput("The following input functional dependencies were not included in the minimal cover set: ", true);
 			}
 			for (int i = 0; i < givenToMinCoverLostFDs.size(); i++) {
-				appendOutput(givenToMinCoverLostFDs.get(i).getFDName(), false);
+				FunctionalDependency fuD = givenToMinCoverLostFDs.get(i);
+				if (!showRemovalNote && fuD.getLeftHandAttributes().size() > 1) {
+					showRemovalNote = true;
+				}
+				appendOutput(fuD.getFDName(), false);
 				if (i < givenToMinCoverLostFDs.size() - 1) {
 					appendOutput("; ", false);
 				}
 			}
 			appendOutput(".", false);
+			if (showRemovalNote) {
+				appendOutput("Note that an excluded input functional dependency having more than one attribute on its left-hand side might still have part of its left-hand side (the part that is part of the minimal cover) included.", true);
+			}
 		}
 		
 
