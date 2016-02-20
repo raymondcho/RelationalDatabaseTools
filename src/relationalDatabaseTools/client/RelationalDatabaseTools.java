@@ -331,7 +331,13 @@ public class RelationalDatabaseTools implements EntryPoint {
 		appendMajorBreak();
 		MinimalFDCover.determineMinimalCover(relation);
 		appendOutput("Calculating a minimal cover set (F_min) of functional dependencies from given input: (note that functional dependencies with common left-hand sides have their right-hand sides combined)", true);
+		appendMinorBreak();
 		List<FunctionalDependency> minimalCover = relation.getMinimalCover();
+		List<String> minimalCoverOutput = relation.getMinimalCoverOutput();
+		for (String output : minimalCoverOutput) {
+			appendOutput(output, true);
+		}
+		appendMinorBreak();
 		if (minimalCover.isEmpty()) {
 			appendOutput("There are no functional dependencies in the minimal cover set.", true);
 		} else {
@@ -344,32 +350,6 @@ public class RelationalDatabaseTools implements EntryPoint {
 			}
 			appendOutput(" }", false);
 		}
-		List<FunctionalDependency> givenToMinCoverLostFDs = relation.getGivenToMinCoverLostFDs();
-		if (givenToMinCoverLostFDs.isEmpty()) {
-			appendOutput("All input functional dependencies were included in the minimal cover set.", true);
-		} else {
-			boolean showRemovalNote = false;
-			if (givenToMinCoverLostFDs.size() == 1) {
-				appendOutput("The following input functional dependency was not included in the minimal cover set: ", true);
-			} else {
-				appendOutput("The following input functional dependencies were not included in the minimal cover set: ", true);
-			}
-			for (int i = 0; i < givenToMinCoverLostFDs.size(); i++) {
-				FunctionalDependency fuD = givenToMinCoverLostFDs.get(i);
-				if (!showRemovalNote && fuD.getLeftHandAttributes().size() > 1) {
-					showRemovalNote = true;
-				}
-				appendOutput(fuD.getFDName(), false);
-				if (i < givenToMinCoverLostFDs.size() - 1) {
-					appendOutput("; ", false);
-				}
-			}
-			appendOutput(".", false);
-			if (showRemovalNote) {
-				appendOutput("Note that an excluded input functional dependency having more than one attribute on its left-hand side might still have part of its left-hand side (the part that is part of the minimal cover) included.", true);
-			}
-		}
-		
 
 		// Print out derived functional dependencies
 		appendMajorBreak();

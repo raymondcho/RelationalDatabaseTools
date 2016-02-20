@@ -22,7 +22,7 @@ public class Relation {
 	private final List<FunctionalDependency> fds;
 	private final List<FunctionalDependency> derivedFDs;
 	private final List<FunctionalDependency> minimalCover;
-	private final List<FunctionalDependency> givenToMinCoverLostFDs;
+	private List<String> minimalCoverOutput;
 	private final List<MultivaluedDependency> mvds;
 	private final List<Closure> closures;
 	private final List<Closure> minimumKeys;
@@ -39,7 +39,7 @@ public class Relation {
 		this.fds = new ArrayList<>();
 		this.derivedFDs = new ArrayList<>();
 		this.minimalCover = new ArrayList<>();
-		this.givenToMinCoverLostFDs = new ArrayList<>();
+		this.minimalCoverOutput = new ArrayList<>();
 		this.mvds = new ArrayList<>();
 		this.closures = new ArrayList<>();
 		this.minimumKeys = new ArrayList<>();
@@ -62,7 +62,7 @@ public class Relation {
 		this.fds = fds;
 		this.derivedFDs = new ArrayList<>();
 		this.minimalCover = new ArrayList<>();
-		this.givenToMinCoverLostFDs = new ArrayList<>();
+		this.minimalCoverOutput = new ArrayList<>();
 		if (mvds == null) {
 			this.mvds = new ArrayList<>();
 		} else {
@@ -261,14 +261,12 @@ public class Relation {
 		return minimalCover;
 	}
 	
-	protected void addGivenToMinCoverLostFDs(final FunctionalDependency f) {
-		if (!RDTUtils.isFunctionalDependencyAlreadyInFDList(f, givenToMinCoverLostFDs)) {
-			givenToMinCoverLostFDs.add(f);
-		}
+	public void setMinimalCoverOutput(List<String> minimalCoverOutput) {
+		this.minimalCoverOutput = minimalCoverOutput;
 	}
 	
-	public List<FunctionalDependency> getGivenToMinCoverLostFDs() {
-		return givenToMinCoverLostFDs;
+	public List<String> getMinimalCoverOutput() {
+		return this.minimalCoverOutput;
 	}
 	
 	protected Attribute getAttribute(String name) {
