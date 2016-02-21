@@ -475,9 +475,9 @@ public class RelationalDatabaseTools implements EntryPoint {
 				} else {
 					appendOutput("The following minimal cover set functional dependencies were lost: ", true);
 				}
-				for (int i = 0; i < pureBCNFLostFDs.size(); i++) {
-					appendOutput(pureBCNFLostFDs.get(i).getFDName(), false);
-					if (i < pureBCNFLostFDs.size() - 1) {
+				for (int i = 0; i < threeNFLostFDs.size(); i++) {
+					appendOutput(threeNFLostFDs.get(i).getFDName(), false);
+					if (i < threeNFLostFDs.size() - 1) {
 						appendOutput("; ", false);
 					}
 				}
