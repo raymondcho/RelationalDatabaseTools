@@ -8,7 +8,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
@@ -22,10 +21,10 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class RelationalDatabaseTools implements EntryPoint {
 	
 	private final VerticalPanel mainPanel = new VerticalPanel();
-	private final HorizontalPanel panel_1 = new HorizontalPanel();
-	private final HorizontalPanel panel_2 = new HorizontalPanel();
-	private final HorizontalPanel panel_3 = new HorizontalPanel();
-	private final HorizontalPanel panel_4 = new HorizontalPanel();
+	private final VerticalPanel panel_1 = new VerticalPanel();
+	private final VerticalPanel panel_2 = new VerticalPanel();
+	private final VerticalPanel panel_3 = new VerticalPanel();
+	private final VerticalPanel panel_4 = new VerticalPanel();
 	private final VerticalPanel outputPanel = new VerticalPanel();
 	
 	private final Label label_1 = new Label("Enter the relation schema in form R(A,B,C,AB,ABC)");

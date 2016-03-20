@@ -85,7 +85,8 @@ public class MinimalFDCover {
 						minimalCoverOutput
 								.add("Attribute "
 										+ a.getName()
-										+ " is not necessary since the remaining left-hand side attribute(s) can still determine all right-hand side attribute(s).");
+										+ " is not necessary since the remaining left-hand side attribute(s) can still determine the right-hand side attribute " + rightAttribute
+										+ ".");
 					}
 				}
 				if (minimizedLeftAttributes.size() < f.getLeftHandAttributes().size()) {
