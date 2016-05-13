@@ -45,14 +45,14 @@ public class Calculate3NFDecomposition extends CalculateDecomposition {
 		// functional dependencies.
 		// For each functional dependency, create a relation schema with the
 		// attributes in that functional dependency (both sides).
-		appendOutputMsg(" For each functional dependency of the canonical cover set of original relation's functional dependencies, "
+		appendOutputMsg(" For each functional dependency of the canonical cover set (merging functional dependencies having the same left-hand attribute(s)) of original relation's functional dependencies, "
 				+ "create a relation schema with the attributes in that functional dependency (both sides).");
 		int counter = 0;
 		for (FunctionalDependency fd : getInputRelation().getMinimalCover()) {
 			List<Attribute> decomposedAttrs = new ArrayList<>();
 			decomposedAttrs.addAll(fd.getLeftHandAttributes());
 			decomposedAttrs.addAll(fd.getRightHandAttributes());
-			List<FunctionalDependency> decomposedFD = RDTUtils.fetchFDsOfDecomposedR(getInputRelation().getMinimalCover(),
+			List<FunctionalDependency> decomposedFD = RDTUtils.fetchFDsOfDecomposedR(RDTUtils.getSingleAttributeMinimalCoverList(getInputRelation().getMinimalCover(), getInputRelation()),
 					decomposedAttrs);
 			Relation threeNFRelation = new Relation(getInputRelation().getName() + counter++, decomposedAttrs, decomposedFD);
 			for (Attribute a : decomposedAttrs) {
@@ -75,7 +75,7 @@ public class Calculate3NFDecomposition extends CalculateDecomposition {
 				}
 			}
 			appendOutputMsg(". ");
-			List<FunctionalDependency> emptyFD = RDTUtils.fetchFDsOfDecomposedR(getInputRelation().getMinimalCover(),
+			List<FunctionalDependency> emptyFD = RDTUtils.fetchFDsOfDecomposedR(RDTUtils.getSingleAttributeMinimalCoverList(getInputRelation().getMinimalCover(), getInputRelation()),
 					missingAttributes);
 			Relation extra3NFRelation = new Relation(getInputRelation().getName() + counter++, missingAttributes, emptyFD);
 			workingOutputRelations.add(extra3NFRelation);
@@ -102,7 +102,7 @@ public class Calculate3NFDecomposition extends CalculateDecomposition {
 			appendOutputMsg(" Since none of the newly created 3NF relations contains a key of the original relation, need to "
 					+ "add another relation whose schema is a key of the original relation.");
 			List<Attribute> addedKeyAttrs = getInputRelation().getMinimumKeyClosures().get(0).getClosureOf();
-			List<FunctionalDependency> emptyFD = RDTUtils.fetchFDsOfDecomposedR(getInputRelation().getMinimalCover(), addedKeyAttrs);
+			List<FunctionalDependency> emptyFD = RDTUtils.fetchFDsOfDecomposedR(RDTUtils.getSingleAttributeMinimalCoverList(getInputRelation().getMinimalCover(), getInputRelation()), addedKeyAttrs);
 			Relation keyRelation = new Relation(getInputRelation().getName() + counter++, addedKeyAttrs, emptyFD);
 			appendOutputMsg(" Added key {" + getInputRelation().getMinimumKeyClosures().get(0).printLeftSideAttributes() + "}. ");
 			workingOutputRelations.add(keyRelation);

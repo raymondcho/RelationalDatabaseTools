@@ -175,4 +175,27 @@ public class RDTUtils {
 		}
 		return result;
 	}
+	
+	/**
+	 * 
+	 * @param fdList
+	 * @param relation
+	 * @return List of minimum canonical cover of functional dependencies each with single right hand side attributes.
+	 */
+	protected static List<FunctionalDependency> getSingleAttributeMinimalCoverList(final List<FunctionalDependency> fdList, final Relation relation) {
+		List<FunctionalDependency> result = new ArrayList<>();
+		for (FunctionalDependency fd : fdList) {
+			if (fd.getRightHandAttributes().size() > 1) {
+				for (Attribute a : fd.getRightHandAttributes()) {
+					List<Attribute> singleRightAttribute = new ArrayList<>();
+					singleRightAttribute.add(a);
+					FunctionalDependency split = new FunctionalDependency(fd.getLeftHandAttributes(), singleRightAttribute, relation);
+					result.add(split);
+				}
+			} else {
+				result.add(fd);
+			}
+		}
+		return result;
+	}
 }

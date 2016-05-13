@@ -109,7 +109,7 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 		}
 		for (FunctionalDependency f : r.getNormalFormsResults().getBCNFViolatingFDs()) {
 			Closure leftSideClosure = RDTUtils.findClosureWithLeftHandAttributes(f.getLeftHandAttributes(), r.getClosures());
-			List<FunctionalDependency> r1FDs = RDTUtils.fetchFDsOfDecomposedR(r.getInputFDs(), leftSideClosure.getClosure());
+			List<FunctionalDependency> r1FDs = RDTUtils.fetchFDsOfDecomposedR(RDTUtils.getSingleAttributeMinimalCoverList(r.getInputFDs(), r), leftSideClosure.getClosure());
 			Relation r1 = new Relation(r.getName() + "_" + counter++, leftSideClosure.getClosure(), r1FDs);
 			List<Attribute> r2Attributes = new ArrayList<>();
 			for (Attribute a : f.getLeftHandAttributes()) {
@@ -124,7 +124,7 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 					}
 				}
 			}
-			List<FunctionalDependency> r2FDs = RDTUtils.fetchFDsOfDecomposedR(r.getInputFDs(), r2Attributes);
+			List<FunctionalDependency> r2FDs = RDTUtils.fetchFDsOfDecomposedR(RDTUtils.getSingleAttributeMinimalCoverList(r.getInputFDs(), r), r2Attributes);
 			Relation r2 = new Relation(r.getName() + "_" + counter++, r2Attributes, r2FDs);
 			result.addAll(decomposeBCNFHelper(r1));
 			result.addAll(decomposeBCNFHelper(r2));
@@ -142,7 +142,7 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 		}
 		threeNFDecomposedWithDuplicates = workingBCNFRelations;
 		List<Relation> purgeDuplicatesAndSubsets = eliminateDuplicateSubsetRelations(workingBCNFRelations);
-		List<FunctionalDependency> lostFDs = findEliminatedFunctionalDependencies(purgeDuplicatesAndSubsets, getInputRelation().getMinimalCover());
+		List<FunctionalDependency> lostFDs = findEliminatedFunctionalDependencies(purgeDuplicatesAndSubsets, RDTUtils.getSingleAttributeMinimalCoverList(getInputRelation().getMinimalCover(), getInputRelation()));
 		threeNFDecomposedRs = purgeDuplicatesAndSubsets;
 		threeNFLostFDs = lostFDs;
 	}

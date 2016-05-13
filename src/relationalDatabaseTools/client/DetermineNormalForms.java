@@ -219,7 +219,7 @@ public class DetermineNormalForms {
 	private void calculateThirdNormalForm() {
 		List<FunctionalDependency> failedFDs = new ArrayList<>();
 		// For each FD A ->B
-		for (FunctionalDependency f : relation.getFDs()) {
+		for (FunctionalDependency f : RDTUtils.getSingleAttributeMinimalCoverList(relation.getFDs(), relation)) {
 			// Check if B is a subset of A (A->B is trivial)
 			if (isTrivialFD(f)) {
 				continue;
@@ -275,23 +275,33 @@ public class DetermineNormalForms {
 			}
 			String twoNFStatus;
 			if (isSecondNormalForm) {
-				twoNFStatus = "it is in 2NF but ";
+				twoNFStatus = "it is in 2NF";
 			} else {
-				twoNFStatus = "it is not in 2NF and ";
+				twoNFStatus = "it is not in 2NF";
 			}
-			thirdNormalFormMsg = "Input relation is not in 3NF: " + twoNFStatus 
-					+ "not all functional dependencies satisfy at least one of the following conditions: "
-					+ "(1) The right-hand side is a subset of the left hand side, "
+			String twoNFStatusEnding;
+			String threeNFStatus;
+			String threeNFRequirements = "(1) The right-hand side is a subset of the left hand side, "
 					+ "(2) the left-hand side is a superkey (or minimum key) of the relation, or "
-					+ "(3) the right-hand side is (or is a part of) some minimum key of the relation. "
-					+ "The functional " + failure + sb.toString();
+					+ "(3) the right-hand side is (or is a part of) some minimum key of the relation.";
+			if (failedFDs.isEmpty()) {
+				twoNFStatusEnding = ".";
+				threeNFStatus = " Otherwise it would be in 3NF as all of the relation's functional dependencies satisfy at least one of the following conditions: " + threeNFRequirements;
+			} else {
+				twoNFStatusEnding = isSecondNormalForm ? " but " : " and ";
+				threeNFStatus = "not all functional dependencies satisfy at least one of the following conditions: "
+						+ threeNFRequirements
+						+ " The functional " + failure + sb.toString();
+			}
+			
+			thirdNormalFormMsg = "Input relation is not in 3NF: " + twoNFStatus + twoNFStatusEnding + threeNFStatus;
 		}
 	}
 
 	private void calculateBCNF() {
 		List<FunctionalDependency> failedFDs = new ArrayList<>();
 		// For each FD A ->B
-		for (FunctionalDependency f : relation.getFDs()) {
+		for (FunctionalDependency f : RDTUtils.getSingleAttributeMinimalCoverList(relation.getFDs(), relation)) {
 			// Check if B is a subset of A (A->B is trivial)
 			if (isTrivialFD(f)) {
 				continue;
@@ -345,7 +355,7 @@ public class DetermineNormalForms {
 		List<MultivaluedDependency> failedMVDs = new ArrayList<>();
 		// Promote all FDs into MVDs
 		List<MultivaluedDependency> combinedMVDs = relation.getMVDs();
-		for (FunctionalDependency fd : relation.getFDs()) {
+		for (FunctionalDependency fd : RDTUtils.getSingleAttributeMinimalCoverList(relation.getFDs(), relation)) {
 			MultivaluedDependency mvd = new MultivaluedDependency(fd.getLeftHandAttributes(), fd.getRightHandAttributes(), relation);
 			boolean duplicateCheck = true;
 			for (MultivaluedDependency m : combinedMVDs) {
