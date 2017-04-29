@@ -1,6 +1,8 @@
 package relationalDatabaseTools.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -109,11 +111,28 @@ public class RDTUtils {
 		if (fdList.isEmpty()) {
 			return false;
 		}
+		HashMap<String, HashSet<String>> dependencyMap = new HashMap<>();
 		for (FunctionalDependency f : fdList) {
-			if (f.getFDName().equals(fd.getFDName())) {
-				return true;
+			String fKey = f.getLeftHandNameKey();
+			HashSet<String> fdAttrs = dependencyMap.get(fKey);
+			if (fdAttrs == null) {
+				fdAttrs = new HashSet<>();
 			}
+			for (Attribute a : f.getRightHandAttributes()) {
+				fdAttrs.add(a.getName());
+			}
+			dependencyMap.put(fKey, fdAttrs);
 		}
+		HashSet<String> fdCompareAttrs = dependencyMap.get(fd.getLeftHandNameKey());
+		if (fdCompareAttrs != null) {
+			for (Attribute fdCompareAttr : fd.getRightHandAttributes()) {
+				if (!fdCompareAttrs.contains(fdCompareAttr.getName())) {
+					return false;
+				}
+			}
+			return true;
+		}
+
 		return false;
 	}
 		

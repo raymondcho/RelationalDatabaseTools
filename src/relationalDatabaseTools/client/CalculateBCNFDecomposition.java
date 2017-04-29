@@ -181,15 +181,11 @@ public class CalculateBCNFDecomposition extends CalculateDecomposition {
 		}
 		List<FunctionalDependency> missingFDs = new ArrayList<>();
 		for (FunctionalDependency originalFD : inputFDs) {
-			String originalFDname = originalFD.getFDName();
 			boolean found = false;
 			for (Relation bcnfR : outputRelations) {
-				for (FunctionalDependency outputFD : bcnfR.getInputFDs()) {
-					String outputFDname = outputFD.getFDName();
-					if (originalFDname.equals(outputFDname)) {
-						found = true;
-						break;
-					}
+				if (RDTUtils.isFunctionalDependencyAlreadyInFDList(originalFD, bcnfR.getInputFDs())) {
+					found = true;
+					break;
 				}
 			}
 			if (!found) {

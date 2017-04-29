@@ -120,6 +120,16 @@ public abstract class Dependency<T extends Dependency<T>> implements Comparable<
 		return this.name;
 	}
 	
+	protected String getLeftHandNameKey() {
+		StringBuilder sb = new StringBuilder();
+		for (Attribute a : leftSide) {
+			sb.append(a.getName());
+			sb.append(":");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		return sb.toString();
+	}
+	
 	protected List<Attribute> getLeftHandAttributes() {
 		return leftSide;
 	}
