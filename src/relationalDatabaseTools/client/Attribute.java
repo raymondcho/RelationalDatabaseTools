@@ -24,4 +24,19 @@ public class Attribute implements Comparable<Attribute>{
 		}
 		return this.getName().compareTo(otherAttribute.getName());
 	}
+	@Override
+	public boolean equals(Object o) {
+		if (o == this) {
+			return true;
+		}
+		if (!(o instanceof Attribute)) {
+			return false;
+		}
+		Attribute otherAttribute = (Attribute) o;
+		return this.name.compareTo(otherAttribute.name) == 0;
+	}
+	@Override
+	public int hashCode() {
+		return name.hashCode();
+	}
 }

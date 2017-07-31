@@ -2,6 +2,7 @@ package relationalDatabaseTools.client;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -56,6 +57,7 @@ public class MinimalFDCover {
 								+ f.getFDName()
 								+ " has more than one attribute on its left-hand side. Checking if each left-hand side attribute is a necessary attribute to compute the right-hand side attribute(s): ");
 				List<Attribute> minimizedLeftAttributes = new ArrayList<>();
+				HashSet<Attribute> nonEssentialAttributes = new HashSet<>();
 				boolean essentialAttribute = false;
 				for (Attribute a : f.getLeftHandAttributes()) {
 					// Check if attribute is necessary by taking it out and
@@ -64,7 +66,7 @@ public class MinimalFDCover {
 					essentialAttribute = false;
 					List<Attribute> newLeftSide = new ArrayList<>();
 					for (Attribute b : f.getLeftHandAttributes()) {
-						if (!b.getName().equals(a.getName())) {
+						if (!b.equals(a) && !nonEssentialAttributes.contains(b)) {
 							newLeftSide.add(b);
 						}
 					}
@@ -73,7 +75,7 @@ public class MinimalFDCover {
 
 					// Now check if the right-hand attribute is still in the
 					// closure.
-					if (!RDTUtils.attributeListContainsAttribute(closure.getClosure(), rightAttribute)) {
+					if (closure == null || !RDTUtils.attributeListContainsAttribute(closure.getClosure(), rightAttribute)) {
 						// Removed attribute is necessary. Add to list.
 						minimizedLeftAttributes.add(a);
 						essentialAttribute = true;
@@ -87,6 +89,7 @@ public class MinimalFDCover {
 										+ a.getName()
 										+ " is not necessary since the remaining left-hand side attribute(s) can still determine the right-hand side attribute " + rightAttribute
 										+ ".");
+						nonEssentialAttributes.add(a);
 					}
 				}
 				if (minimizedLeftAttributes.size() < f.getLeftHandAttributes().size()) {
